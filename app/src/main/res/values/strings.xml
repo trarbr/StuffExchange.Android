@@ -11,4 +11,8 @@
     <string name="GiftTitleLabel">Title</string>
     <string name="GiftDescriptionLabel">Description</string>
     <string name="title_activity_new_gift">New gift</string>
+    <string name="title_activity_gift">GiftActivity</string>
+
+    <string name="hello_world">Hello world!</string>
+    <string name="title_activity_add_image">AddImageActivity</string>
 </resources>
