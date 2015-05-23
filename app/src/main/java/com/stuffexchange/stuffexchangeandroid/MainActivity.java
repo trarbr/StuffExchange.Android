@@ -1,6 +1,7 @@
 package com.stuffexchange.stuffexchangeandroid;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
@@ -33,36 +34,23 @@ public class MainActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Log.d(LOGTAG, "got to mainz!");
         String token = getIntent().getStringExtra("Token");
-        Log.d(LOGTAG, "got the token: " + token);
+        Log.d(LOGTAG, "Got token: " + token);
         this.token = token;
 
         gifts.add(new Gift("Gyngehest",
-                "Min datter er blevet for stor, nogen der mangler??", R.drawable.gyngehest));
+                "Min datter er blevet for stor, nogen der mangler??", R.drawable.gyngehest_small));
         gifts.add(new Gift("Fiat Bravo",
                 "Mine kone synes det er noget bras, men den kører så fuglene synger!",
-                R.drawable.fiatbravo));
-        gifts.add(new Gift("Gyngehest",
-                "Min datter er blevet for stor, nogen der mangler??", R.drawable.gyngehest));
-        gifts.add(new Gift("Gyngehest",
-                "Min datter er blevet for stor, nogen der mangler??", R.drawable.gyngehest));
-        gifts.add(new Gift("Gyngehest",
-                "Min datter er blevet for stor, nogen der mangler??", R.drawable.gyngehest));
-        gifts.add(new Gift("Gyngehest",
-                "Min datter er blevet for stor, nogen der mangler??", R.drawable.gyngehest));
-        gifts.add(new Gift("Gyngehest",
-                "Min datter er blevet for stor, nogen der mangler??", R.drawable.gyngehest));
-        gifts.add(new Gift("Gyngehest",
-                "Min datter er blevet for stor, nogen der mangler??", R.drawable.gyngehest));
-        gifts.add(new Gift("Gyngehest",
-                "Min datter er blevet for stor, nogen der mangler??", R.drawable.gyngehest));
-        gifts.add(new Gift("Gyngehest",
-                "Min datter er blevet for stor, nogen der mangler??", R.drawable.gyngehest));
-        gifts.add(new Gift("Gyngehest",
-                "Min datter er blevet for stor, nogen der mangler??", R.drawable.gyngehest));
-        gifts.add(new Gift("Gyngehest",
-                "Min datter er blevet for stor, nogen der mangler??", R.drawable.gyngehest));
+                R.drawable.fiat_small));
+        gifts.add(new Gift("Nike Lunar flyknit1+ multicolor",
+                "Super fede, men jeg kan ikke passe dem", R.drawable.nike_small));
+        gifts.add(new Gift("Fischer Price gåbil",
+                "Med lyd og to funktioner. Kan både bruges til at sidde på og til at gå efter. Kan køre på to lydeffekter - ABC og musik", R.drawable.walkcar_small));
+        gifts.add(new Gift("Juniorseng",
+                "En super god seng til junior. Madras medfølger ikke!", R.drawable.seng_small));
+        gifts.add(new Gift("Messis trøje",
+                "Bliv verdens bedste! Jeg er for tyk :(", R.drawable.messi_small));
 
         final ListView giftsListView = (ListView)findViewById(R.id.giftsListView);
         final GiftArrayAdapter adapter = new GiftArrayAdapter(MainActivity.this, gifts);
@@ -71,7 +59,7 @@ public class MainActivity extends ActionBarActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, final View view, int position, long id) {
                 final Gift gift = (Gift) parent.getItemAtPosition(position);
-                view.animate().setDuration(2000).alpha(0).withEndAction(new Runnable() {
+                view.animate().setDuration(500).alpha(0).withEndAction(new Runnable() {
                     @Override
                     public void run() {
                         gifts.remove(gift);
@@ -128,7 +116,6 @@ public class MainActivity extends ActionBarActivity {
             return null;
         }
     }
-
 
     private class Gift {
         private String name;
@@ -210,6 +197,10 @@ public class MainActivity extends ActionBarActivity {
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             return true;
+        }
+        else if (id == R.id.new_gift) {
+            Intent intent = new Intent(getApplicationContext(), NewGiftActivity.class);
+            startActivity(intent);
         }
 
         return super.onOptionsItemSelected(item);

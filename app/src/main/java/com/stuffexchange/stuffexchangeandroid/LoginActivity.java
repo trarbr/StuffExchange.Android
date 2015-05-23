@@ -75,7 +75,6 @@ public class LoginActivity extends ActionBarActivity {
         String password = passwordEditText.getText().toString();
         //String auth_uri = "http://www.stuffexchange.dev/auth";
         String auth_uri = "http://10.0.2.2:3579/auth";
-        // TODO: attempt a login against server
         Map<String, String> params = new HashMap<>();
         params.put("username", email);
         params.put("password", password);

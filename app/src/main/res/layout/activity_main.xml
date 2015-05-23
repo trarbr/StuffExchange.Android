@@ -10,7 +10,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/greeterTextView"
-        android:text="Hi Troels!" />
+        android:text="Hi Troels! Here's what we've found near you!" />
 
     <Button
         android:layout_width="wrap_content"
@@ -20,7 +20,8 @@
         android:text="Activate"
         android:id="@+id/activateButton"
         android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true" />
+        android:layout_centerHorizontal="true"
+        android:visibility="gone"/>
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -29,8 +30,8 @@
         android:text="Create gift"
         android:id="@+id/createGiftButton"
         android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true" />
-    <!--xmlns:android="http://schemas.android.com/apk/res/android"-->
+        android:layout_centerHorizontal="true"
+        android:visibility="gone"/>
     <ListView
         android:layout_below="@+id/createGiftButton"
         android:layout_marginTop="20dp"
