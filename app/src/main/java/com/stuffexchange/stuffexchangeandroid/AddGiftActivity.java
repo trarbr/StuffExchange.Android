@@ -19,7 +19,7 @@ import android.widget.ImageView;
 import java.io.File;
 
 
-public class NewGiftActivity extends ActionBarActivity {
+public class AddGiftActivity extends ActionBarActivity {
 
     private static final String LOGTAG = "StuffExchange";
     private static final int TAKE_PICTURE_REQUEST_CODE = 1;
@@ -27,7 +27,7 @@ public class NewGiftActivity extends ActionBarActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_new_gift);
+        setContentView(R.layout.activity_add_gift);
 
         Button photoButton = (Button)findViewById(R.id.photoButton);
         photoButton.setOnClickListener( new View.OnClickListener() {

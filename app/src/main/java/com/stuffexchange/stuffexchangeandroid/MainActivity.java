@@ -199,7 +199,7 @@ public class MainActivity extends ActionBarActivity {
             return true;
         }
         else if (id == R.id.new_gift) {
-            Intent intent = new Intent(getApplicationContext(), NewGiftActivity.class);
+            Intent intent = new Intent(getApplicationContext(), AddGiftActivity.class);
             startActivity(intent);
         }
 
