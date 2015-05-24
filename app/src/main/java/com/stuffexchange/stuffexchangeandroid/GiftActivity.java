@@ -2,16 +2,20 @@ package com.stuffexchange.stuffexchangeandroid;
 
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
 
 public class GiftActivity extends ActionBarActivity {
+    private final String LOGTAG = "StuffExchange";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_gift);
+        String giftId = getIntent().getStringExtra("GiftId");
+        Log.d(LOGTAG, "Got giftId: " + giftId);
     }
 
 

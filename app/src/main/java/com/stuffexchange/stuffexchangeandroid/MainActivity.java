@@ -3,8 +3,6 @@ package com.stuffexchange.stuffexchangeandroid;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.os.AsyncTask;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -19,17 +17,6 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.gson.Gson;
-
-import org.json.JSONObject;
-
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -37,7 +24,7 @@ import java.util.List;
 public class MainActivity extends ActionBarActivity {
     private static final String LOGTAG = "StuffExchange";
     private String token;
-    private List<Gift> gifts = new ArrayList<>();
+    private DataAccess dataAccess;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,70 +34,32 @@ public class MainActivity extends ActionBarActivity {
         Log.d(LOGTAG, "Got token: " + token);
         this.token = token;
 
-        // TODO: get gifts from server
-        // send a get request...
-        // get the json response
-        // use each json thing to populate the list of gifts
-        new AsyncGetGiftIds().execute();
+        dataAccess = new DataAccess();
+        dataAccess.GetGiftIds(new GiftIdsGetter());
     }
 
-    private class AsyncGetGiftIds extends AsyncTask<Void, Void, String> {
+    private class GiftIdsGetter implements OnTaskCompleted {
         @Override
-        protected String doInBackground(Void... params) {
-            String gifts_uri = "http://10.0.2.2:3579/gifts";
-            try {
-                URL url = new URL(gifts_uri);
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setReadTimeout(10000);
-                conn.setConnectTimeout(15000);
-                conn.setRequestMethod("GET");
-                conn.setDoInput(true);
-
-                int responseCode = conn.getResponseCode();
-                // read responsebody into a string
-                String responseBody = null;
-                if (responseCode == 200) {
-                    StringBuilder sb = new StringBuilder();
-                    InputStreamReader streamReader = new InputStreamReader(conn.getInputStream());
-                    BufferedReader reader = new BufferedReader(streamReader);
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        sb.append(line).append("\n");
-                    }
-                    responseBody = sb.toString();
-                }
-                return responseBody;
-            } catch (Exception ex) {
-                Log.d(LOGTAG, ex.getMessage());
-                return null;
-            }
-        }
-
-        @Override
-        protected void onPostExecute(String responseBody) {
-            if (responseBody == null) {
+        public void onTaskCompleted(Object o) {
+            if (o == null) {
                 String message = "Could not get gifts from server";
                 Context context = getApplicationContext();
                 int duration = Toast.LENGTH_SHORT;
-
                 Toast toast = Toast.makeText(context, message, duration);
                 toast.show();
             }
             else {
-                // convert to list of Gifts
-                Gson gson = new Gson();
-                String[] giftIdArray = gson.fromJson(responseBody, String[].class);
-                final List<String> giftIds = new ArrayList<>(Arrays.asList(giftIdArray));
+                final List<String> giftIds = (List<String>) o;
                 final ListView giftsListView = (ListView)findViewById(R.id.giftsListView);
                 final GiftIdArrayAdapter adapter = new GiftIdArrayAdapter(MainActivity.this, giftIds);
                 giftsListView.setAdapter(adapter);
                 giftsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                     @Override
                     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                        // TODO: start activity
                         Intent intent = new Intent(getApplicationContext(), GiftActivity.class);
                         String giftId = giftIds.get(position);
                         intent.putExtra("GiftId", giftId);
+                        Log.d(LOGTAG, "GiftId: " + giftId);
                         startActivity(intent);
                     }
                 });
@@ -118,112 +67,54 @@ public class MainActivity extends ActionBarActivity {
         }
     }
 
-    private class AsyncSetImage extends AsyncTask<Void, Void, Bitmap> {
-        String mUri;
-        ImageView mImageView;
-
-        public AsyncSetImage(String imageId, ImageView imageView) {
-            mUri = "http://10.0.2.2:3579/images/" + imageId + "_thumb,jpg";
-            mImageView = imageView;
-        }
-        @Override
-        protected Bitmap doInBackground(Void... params) {
-            // TODO: Check if in cache
-            try {
-                URL url = new URL(mUri);
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setRequestMethod("GET");
-                conn.setReadTimeout(10000);
-                conn.setConnectTimeout(15000);
-                conn.setDoInput(true);
-
-                int responseCode = conn.getResponseCode();
-                if (responseCode == 200) {
-                    InputStream imageStream = conn.getInputStream();
-                    Bitmap image = BitmapFactory.decodeStream(imageStream);
-                    // TODO: Should probably close the input stream on finally
-                    imageStream.close();
-                    return image;
-                } else {
-                    return null;
-                }
-            } catch (Exception ex) {
-                Log.d(LOGTAG, ex.getMessage());
-                return null;
-            }
-        }
-
-        @Override
-        protected void onPostExecute(Bitmap image) {
-            // TODO: Add to cache
-            // TODO: handle fast scrolling (don't set the image if someone else did)
-            mImageView.setImageBitmap(image);
-        }
-    }
-
-    private class AsyncSetGift extends AsyncTask<Void, Void, String> {
-        String mUri;
-        View mGiftView;
-
-        public AsyncSetGift(String giftId, View giftView) {
-            mUri = "http://10.0.2.2:3579/gifts/" + giftId;
+    private class GiftGetter implements OnTaskCompleted {
+        private View mGiftView;
+        public GiftGetter(View giftView) {
             mGiftView = giftView;
         }
         @Override
-        protected String doInBackground(Void... params) {
-            try {
-                URL url = new URL(mUri);
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setRequestMethod("GET");
-                conn.setReadTimeout(10000);
-                conn.setConnectTimeout(15000);
-                conn.setDoInput(true);
-
-                int responseCode = conn.getResponseCode();
-                String responseBody = null;
-                if (responseCode == 200) {
-                    StringBuilder sb = new StringBuilder();
-                    InputStreamReader streamReader = new InputStreamReader(conn.getInputStream());
-                    BufferedReader reader = new BufferedReader(streamReader);
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        sb.append(line).append("\n");
-                    }
-                    responseBody = sb.toString();
-                }
-                return responseBody;
-            } catch (Exception ex) {
-                Log.d(LOGTAG, ex.getMessage());
-                return null;
-            }
-        }
-
-        @Override
-        protected void onPostExecute(String responseBody) {
-            if (responseBody == null) {
+        public void onTaskCompleted(Object o) {
+            if (o == null) {
                 String message = "Could not get gift from server";
                 Context context = getApplicationContext();
                 int duration = Toast.LENGTH_SHORT;
-
                 Toast toast = Toast.makeText(context, message, duration);
                 toast.show();
             } else {
-                Gift gift = Gift.fromJsonString(responseBody);
-                if (gift == null) {
-                    return;
-                }
-                // TODO: Add to memory cache
+                // populate the view
+                Gift gift = (Gift) o;
                 ImageView giftImageView = (ImageView) mGiftView.findViewById(R.id.giftImageView);
                 if (gift.hasImages()) {
-                    String imageUri = gift.getCoverImage();
-                    String thumbUri = "http://10.0.2.2:3579/images/" + imageUri + "_thumb.jpg";
-                    AsyncSetImage imageSetter = new AsyncSetImage(thumbUri, giftImageView);
-                    imageSetter.execute();
+                    String imageId = gift.getCoverImage() + "_thumb";
+                    dataAccess.GetImage(new CoverImageGetter(giftImageView), imageId);
                 }
                 TextView titleTextView = (TextView) mGiftView.findViewById(R.id.giftTitle);
                 titleTextView.setText(gift.getTitle());
                 TextView descriptionTextView = (TextView) mGiftView.findViewById(R.id.giftDescription);
                 descriptionTextView.setText(gift.getDescription());
+            }
+        }
+    }
+
+    private class CoverImageGetter implements OnTaskCompleted {
+        ImageView mImageView;
+        public CoverImageGetter(ImageView imageView) {
+            mImageView = imageView;
+        }
+        @Override
+        public void onTaskCompleted(Object o) {
+            if (o == null) {
+                String message = "Could not get image from server";
+                Context context = getApplicationContext();
+                int duration = Toast.LENGTH_SHORT;
+                Toast toast = Toast.makeText(context, message, duration);
+                toast.show();
+            }
+            else {
+                Bitmap image = (Bitmap) o;
+                // TODO: Add to cache
+                // TODO: handle fast scrolling (don't set the image if someone else did)
+                mImageView.setImageBitmap(image);
             }
         }
     }
@@ -245,8 +136,7 @@ public class MainActivity extends ActionBarActivity {
             String giftId = getItem(position);
 
             // TODO Download Gift
-            AsyncSetGift giftSetter = new AsyncSetGift(giftId, giftView);
-            giftSetter.execute();
+            dataAccess.GetGift(new GiftGetter(giftView), giftId);
 
             return giftView;
         }
