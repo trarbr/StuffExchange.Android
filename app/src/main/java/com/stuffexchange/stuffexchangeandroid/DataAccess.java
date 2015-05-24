@@ -127,6 +127,7 @@ public class DataAccess {
         @Override
         protected Bitmap doInBackground(Void... params) {
             // TODO: Check if in cache
+            Log.d(LOGTAG, "Gettimg image " + mUri);
             try {
                 URL url = new URL(mUri);
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -136,10 +137,13 @@ public class DataAccess {
                 conn.setDoInput(true);
 
                 int responseCode = conn.getResponseCode();
+                Log.d(LOGTAG, "Image get response code: " + responseCode);
                 if (responseCode == 200) {
                     InputStream imageStream = conn.getInputStream();
+                    Log.d(LOGTAG, "Decoding image");
                     Bitmap image = BitmapFactory.decodeStream(imageStream);
                     // TODO: Should probably close the input stream on finally
+                    Log.d(LOGTAG, "Decoding finished");
                     imageStream.close();
                     return image;
                 } else {
@@ -153,6 +157,7 @@ public class DataAccess {
 
         @Override
         protected void onPostExecute(Bitmap image) {
+            Log.d(LOGTAG, "Getting image task completed!");
             mCaller.onTaskCompleted(image);
         }
     }

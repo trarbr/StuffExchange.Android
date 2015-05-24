@@ -86,6 +86,7 @@ public class MainActivity extends ActionBarActivity {
                 ImageView giftImageView = (ImageView) mGiftView.findViewById(R.id.giftImageView);
                 if (gift.hasImages()) {
                     String imageId = gift.getCoverImage() + "_thumb";
+                    Log.d(LOGTAG, "Image Id: " + imageId);
                     dataAccess.GetImage(new CoverImageGetter(giftImageView), imageId);
                 }
                 TextView titleTextView = (TextView) mGiftView.findViewById(R.id.giftTitle);

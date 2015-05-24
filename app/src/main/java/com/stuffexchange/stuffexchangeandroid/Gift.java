@@ -1,8 +1,10 @@
 package com.stuffexchange.stuffexchangeandroid;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Gift {
@@ -55,6 +57,16 @@ public class Gift {
             gift.id = json.getString("Id");
             gift.title = json.getString("Title");
             gift.description = json.getString("Description");
+            JSONArray images = json.getJSONArray("Images");
+            if (images.length() > 0) {
+                gift.images = new ArrayList<String>();
+                for (int i=0; i < images.length(); i++) {
+                    String imageId = (String) images.get(i);
+                    gift.images.add(i, imageId);
+                }
+            } else {
+                gift.images = null;
+            }
             return gift;
         } catch (JSONException ex) {
             return null;
