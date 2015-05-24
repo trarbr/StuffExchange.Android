@@ -2,6 +2,8 @@ package com.stuffexchange.stuffexchangeandroid;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
@@ -12,15 +14,22 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
+
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -38,111 +47,190 @@ public class MainActivity extends ActionBarActivity {
         Log.d(LOGTAG, "Got token: " + token);
         this.token = token;
 
-        gifts.add(new Gift("Gyngehest",
-                "Min datter er blevet for stor, nogen der mangler??", R.drawable.gyngehest_small));
-        gifts.add(new Gift("Fiat Bravo",
-                "Mine kone synes det er noget bras, men den kører så fuglene synger!",
-                R.drawable.fiat_small));
-        gifts.add(new Gift("Nike Lunar flyknit1+ multicolor",
-                "Super fede, men jeg kan ikke passe dem", R.drawable.nike_small));
-        gifts.add(new Gift("Fischer Price gåbil",
-                "Med lyd og to funktioner. Kan både bruges til at sidde på og til at gå efter. Kan køre på to lydeffekter - ABC og musik", R.drawable.walkcar_small));
-        gifts.add(new Gift("Juniorseng",
-                "En super god seng til junior. Madras medfølger ikke!", R.drawable.seng_small));
-        gifts.add(new Gift("Messis trøje",
-                "Bliv verdens bedste! Jeg er for tyk :(", R.drawable.messi_small));
-
-        final ListView giftsListView = (ListView)findViewById(R.id.giftsListView);
-        final GiftArrayAdapter adapter = new GiftArrayAdapter(MainActivity.this, gifts);
-        giftsListView.setAdapter(adapter);
-        giftsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, final View view, int position, long id) {
-                final Gift gift = (Gift) parent.getItemAtPosition(position);
-                view.animate().setDuration(500).alpha(0).withEndAction(new Runnable() {
-                    @Override
-                    public void run() {
-                        gifts.remove(gift);
-                        adapter.notifyDataSetChanged();
-                        view.setAlpha(1);
-                    }
-                });
-            }
-        });
-
-        Button activateButton = (Button)findViewById(R.id.activateButton);
-        activateButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                new AsyncHttpActivate().execute();
-            }
-        });
+        // TODO: get gifts from server
+        // send a get request...
+        // get the json response
+        // use each json thing to populate the list of gifts
+        new AsyncGetGiftIds().execute();
     }
 
-    private class AsyncHttpActivate extends AsyncTask<String, Void, String> {
+    private class AsyncGetGiftIds extends AsyncTask<Void, Void, String> {
         @Override
-        protected String doInBackground(String... params) {
-            return attemptActivate();
+        protected String doInBackground(Void... params) {
+            String gifts_uri = "http://10.0.2.2:3579/gifts";
+            try {
+                URL url = new URL(gifts_uri);
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setReadTimeout(10000);
+                conn.setConnectTimeout(15000);
+                conn.setRequestMethod("GET");
+                conn.setDoInput(true);
+
+                int responseCode = conn.getResponseCode();
+                // read responsebody into a string
+                String responseBody = null;
+                if (responseCode == 200) {
+                    StringBuilder sb = new StringBuilder();
+                    InputStreamReader streamReader = new InputStreamReader(conn.getInputStream());
+                    BufferedReader reader = new BufferedReader(streamReader);
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        sb.append(line).append("\n");
+                    }
+                    responseBody = sb.toString();
+                }
+                return responseBody;
+            } catch (Exception ex) {
+                Log.d(LOGTAG, ex.getMessage());
+                return null;
+            }
         }
+
         @Override
-        protected void onPostExecute(String result) {
-            Log.d(LOGTAG, "Reponse on activate: " + result);
-            // TODO: toast!
-            if (result != null) {
-                CharSequence message = result.equals("200") ? "Activated!" : "Bad request!";
+        protected void onPostExecute(String responseBody) {
+            if (responseBody == null) {
+                String message = "Could not get gifts from server";
                 Context context = getApplicationContext();
                 int duration = Toast.LENGTH_SHORT;
 
                 Toast toast = Toast.makeText(context, message, duration);
                 toast.show();
             }
+            else {
+                // convert to list of Gifts
+                Gson gson = new Gson();
+                String[] giftIdArray = gson.fromJson(responseBody, String[].class);
+                final List<String> giftIds = new ArrayList<>(Arrays.asList(giftIdArray));
+                final ListView giftsListView = (ListView)findViewById(R.id.giftsListView);
+                final GiftIdArrayAdapter adapter = new GiftIdArrayAdapter(MainActivity.this, giftIds);
+                giftsListView.setAdapter(adapter);
+                giftsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                        // TODO: start activity
+                        Intent intent = new Intent(getApplicationContext(), GiftActivity.class);
+                        String giftId = giftIds.get(position);
+                        intent.putExtra("GiftId", giftId);
+                        startActivity(intent);
+                    }
+                });
+            }
         }
     }
 
-    private String attemptActivate() {
-        String user_uri = "http://10.0.2.2:3579/user";
-        try {
-            URL url = new URL(user_uri);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setReadTimeout(10000);
-            conn.setConnectTimeout(15000);
-            conn.setRequestMethod("PUT");
-            conn.setRequestProperty("Authorization", "Token " + this.token);
-            conn.setRequestProperty("Accept", "application/vnd.stuffexchange.activate+json");
-            int responseCode = conn.getResponseCode();
-            return Integer.toString(responseCode);
-        } catch (Exception ex) {
-            // TODO: handle
-            return null;
+    private class AsyncSetImage extends AsyncTask<Void, Void, Bitmap> {
+        String mUri;
+        ImageView mImageView;
+
+        public AsyncSetImage(String imageId, ImageView imageView) {
+            mUri = "http://10.0.2.2:3579/images/" + imageId + "_thumb,jpg";
+            mImageView = imageView;
+        }
+        @Override
+        protected Bitmap doInBackground(Void... params) {
+            // TODO: Check if in cache
+            try {
+                URL url = new URL(mUri);
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("GET");
+                conn.setReadTimeout(10000);
+                conn.setConnectTimeout(15000);
+                conn.setDoInput(true);
+
+                int responseCode = conn.getResponseCode();
+                if (responseCode == 200) {
+                    InputStream imageStream = conn.getInputStream();
+                    Bitmap image = BitmapFactory.decodeStream(imageStream);
+                    // TODO: Should probably close the input stream on finally
+                    imageStream.close();
+                    return image;
+                } else {
+                    return null;
+                }
+            } catch (Exception ex) {
+                Log.d(LOGTAG, ex.getMessage());
+                return null;
+            }
+        }
+
+        @Override
+        protected void onPostExecute(Bitmap image) {
+            // TODO: Add to cache
+            // TODO: handle fast scrolling (don't set the image if someone else did)
+            mImageView.setImageBitmap(image);
         }
     }
 
-    private class Gift {
-        private String name;
-        private String description;
-        private int iconId;
-        public Gift(String name, String description, int iconId) {
-            this.name = name;
-            this.description = description;
-            this.iconId = iconId;
+    private class AsyncSetGift extends AsyncTask<Void, Void, String> {
+        String mUri;
+        View mGiftView;
+
+        public AsyncSetGift(String giftId, View giftView) {
+            mUri = "http://10.0.2.2:3579/gifts/" + giftId;
+            mGiftView = giftView;
+        }
+        @Override
+        protected String doInBackground(Void... params) {
+            try {
+                URL url = new URL(mUri);
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("GET");
+                conn.setReadTimeout(10000);
+                conn.setConnectTimeout(15000);
+                conn.setDoInput(true);
+
+                int responseCode = conn.getResponseCode();
+                String responseBody = null;
+                if (responseCode == 200) {
+                    StringBuilder sb = new StringBuilder();
+                    InputStreamReader streamReader = new InputStreamReader(conn.getInputStream());
+                    BufferedReader reader = new BufferedReader(streamReader);
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        sb.append(line).append("\n");
+                    }
+                    responseBody = sb.toString();
+                }
+                return responseBody;
+            } catch (Exception ex) {
+                Log.d(LOGTAG, ex.getMessage());
+                return null;
+            }
         }
 
-        public String getTitle() {
-            return name;
-        }
+        @Override
+        protected void onPostExecute(String responseBody) {
+            if (responseBody == null) {
+                String message = "Could not get gift from server";
+                Context context = getApplicationContext();
+                int duration = Toast.LENGTH_SHORT;
 
-        public String getDescription() {
-            return description;
-        }
-
-        public int getIconId() {
-            return iconId;
+                Toast toast = Toast.makeText(context, message, duration);
+                toast.show();
+            } else {
+                Gift gift = Gift.fromJsonString(responseBody);
+                if (gift == null) {
+                    return;
+                }
+                // TODO: Add to memory cache
+                ImageView giftImageView = (ImageView) mGiftView.findViewById(R.id.giftImageView);
+                if (gift.hasImages()) {
+                    String imageUri = gift.getCoverImage();
+                    String thumbUri = "http://10.0.2.2:3579/images/" + imageUri + "_thumb.jpg";
+                    AsyncSetImage imageSetter = new AsyncSetImage(thumbUri, giftImageView);
+                    imageSetter.execute();
+                }
+                TextView titleTextView = (TextView) mGiftView.findViewById(R.id.giftTitle);
+                titleTextView.setText(gift.getTitle());
+                TextView descriptionTextView = (TextView) mGiftView.findViewById(R.id.giftDescription);
+                descriptionTextView.setText(gift.getDescription());
+            }
         }
     }
 
-    private class GiftArrayAdapter extends ArrayAdapter<Gift> {
-        HashMap<Gift, Integer> mIdMap = new HashMap<>();
-        public GiftArrayAdapter(Context context, List<Gift> gifts) {
+    private class GiftIdArrayAdapter extends ArrayAdapter<String> {
+        HashMap<String, Integer> mIdMap = new HashMap<>();
+        public GiftIdArrayAdapter(Context context, List<String> gifts) {
             super(context, R.layout.gift_layout, gifts);
             for (int i = 0; i < gifts.size(); i++) {
                 mIdMap.put(gifts.get(i), i);
@@ -154,22 +242,19 @@ public class MainActivity extends ActionBarActivity {
             View giftView = convertView != null ? convertView :
                     getLayoutInflater().inflate(R.layout.gift_layout, parent, false);
 
-            Gift gift = getItem(position);
+            String giftId = getItem(position);
 
-            ImageView giftImageView = (ImageView) giftView.findViewById(R.id.giftView);
-            giftImageView.setImageResource(gift.getIconId());
-            TextView titleTextView = (TextView)giftView.findViewById(R.id.giftTitle);
-            titleTextView.setText(gift.getTitle());
-            TextView descriptionTextView = (TextView)giftView.findViewById(R.id.giftDescription);
-            descriptionTextView.setText(gift.getDescription());
+            // TODO Download Gift
+            AsyncSetGift giftSetter = new AsyncSetGift(giftId, giftView);
+            giftSetter.execute();
 
             return giftView;
         }
 
         @Override
         public long getItemId(int position) {
-            Gift gift = getItem(position);
-            return mIdMap.get(gift);
+            String giftId = getItem(position);
+            return mIdMap.get(giftId);
         }
 
         // TODO: Why use stable ids?
@@ -178,7 +263,6 @@ public class MainActivity extends ActionBarActivity {
             return true;
         }
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

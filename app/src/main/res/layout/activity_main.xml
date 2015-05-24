@@ -12,28 +12,8 @@
         android:id="@+id/greeterTextView"
         android:text="Hi Troels! Here's what we've found near you!" />
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/greeterTextView"
-        android:layout_marginTop="10dp"
-        android:text="Activate"
-        android:id="@+id/activateButton"
-        android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true"
-        android:visibility="gone"/>
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/activateButton"
-        android:layout_marginTop="10dp"
-        android:text="Create gift"
-        android:id="@+id/createGiftButton"
-        android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true"
-        android:visibility="gone"/>
     <ListView
-        android:layout_below="@+id/createGiftButton"
+        android:layout_below="@+id/greeterTextView"
         android:layout_marginTop="20dp"
         android:id="@+id/giftsListView"
         android:layout_width="fill_parent"

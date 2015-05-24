@@ -19,7 +19,8 @@
         android:layout_marginTop="100dp"
         android:layout_below="@+id/new_gift_header"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true">
+        android:layout_alignParentStart="true"
+        android:columnCount="3">
 
         <Space
             android:layout_column="1"
@@ -53,22 +54,10 @@
             android:minLines="6"
             android:gravity="top|start"
             android:maxLines="10"
-            android:layout_height="wrap_content"
-            android:layout_width="fill_parent"
+            android:layout_gravity="fill"
             android:scrollbars="vertical"/>
+            <!--android:layout_height="wrap_content"-->
 
     </GridLayout>
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/new_gift_header"
-        android:text="Take a photo!"
-        android:id="@+id/photoButton" />
-
-    <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/photoButton"
-        android:id="@+id/photoView" />
 
 </RelativeLayout>
