@@ -68,8 +68,8 @@ public class MainActivity extends ActionBarActivity {
     }
 
     private class GiftGetter implements OnTaskCompleted {
-        private View mGiftView;
-        public GiftGetter(View giftView) {
+        private GiftIdArrayAdapter.GiftViewHolder mGiftView;
+        public GiftGetter(GiftIdArrayAdapter.GiftViewHolder giftView) {
             mGiftView = giftView;
         }
         @Override
@@ -83,16 +83,14 @@ public class MainActivity extends ActionBarActivity {
             } else {
                 // populate the view
                 Gift gift = (Gift) o;
-                ImageView giftImageView = (ImageView) mGiftView.findViewById(R.id.giftImageView);
+                ImageView giftImageView = mGiftView.giftImageView;
                 if (gift.hasImages()) {
                     String imageId = gift.getCoverImage() + "_thumb";
                     Log.d(LOGTAG, "Image Id: " + imageId);
                     dataAccess.GetImage(new CoverImageGetter(giftImageView), imageId);
                 }
-                TextView titleTextView = (TextView) mGiftView.findViewById(R.id.giftTitle);
-                titleTextView.setText(gift.getTitle());
-                TextView descriptionTextView = (TextView) mGiftView.findViewById(R.id.giftDescription);
-                descriptionTextView.setText(gift.getDescription());
+                mGiftView.titleTextView.setText(gift.getTitle());
+                mGiftView.descriptionTextView.setText(gift.getDescription());
             }
         }
     }
@@ -129,17 +127,34 @@ public class MainActivity extends ActionBarActivity {
             }
         }
 
+        public class GiftViewHolder {
+            ImageView giftImageView;
+            TextView titleTextView;
+            TextView descriptionTextView;
+
+            public GiftViewHolder(View v) {
+                giftImageView = (ImageView) v.findViewById(R.id.giftImageView);
+                titleTextView = (TextView) v.findViewById(R.id.giftTitle);
+                descriptionTextView = (TextView) v.findViewById(R.id.giftDescription);
+            }
+
+        }
+
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-            View giftView = convertView != null ? convertView :
-                    getLayoutInflater().inflate(R.layout.gift_layout, parent, false);
+            View row = convertView;
+            GiftViewHolder holder = null;
+            if (row == null) {
+                row = getLayoutInflater().inflate(R.layout.gift_layout, parent, false);
+                holder = new GiftViewHolder(row);
+                row.setTag(holder);
+            } else {
+                holder = (GiftViewHolder) row.getTag();
+            }
 
             String giftId = getItem(position);
-
-            // TODO Download Gift
-            dataAccess.GetGift(new GiftGetter(giftView), giftId);
-
-            return giftView;
+            dataAccess.GetGift(new GiftGetter(holder), giftId);
+            return row;
         }
 
         @Override

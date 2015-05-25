@@ -14,14 +14,20 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class DataAccess {
     private final String LOGTAG = "DataAccess";
     private final String BASE_URL = "http://10.0.2.2:3579/";
+    private Map<String, Bitmap> images;
+
+    public DataAccess() {
+        images = new HashMap<>();
+    }
 
     public void GetGiftIds(OnTaskCompleted caller) {
-        // TODO: start async task, oncomplete call the callback
         new AsyncGetGiftIds(caller).execute();
     }
 
@@ -30,7 +36,13 @@ public class DataAccess {
     }
 
     public void GetImage(OnTaskCompleted caller, String imageId) {
-        new AsyncGetImage(caller, imageId).execute();
+        if (!images.containsKey(imageId)) {
+            new AsyncGetImage(caller, imageId).execute();
+        }
+        else {
+            caller.onTaskCompleted(images.get(imageId));
+        }
+
     }
 
     protected String get(String uri) {
@@ -118,9 +130,11 @@ public class DataAccess {
     private class AsyncGetImage extends AsyncTask<Void, Void, Bitmap> {
         OnTaskCompleted mCaller;
         String mUri;
+        String mImageId;
 
         public AsyncGetImage(OnTaskCompleted caller, String imageId) {
             mCaller = caller;
+            mImageId = imageId;
             mUri = BASE_URL + "images/" + imageId + ".jpg";
         }
 
@@ -158,6 +172,7 @@ public class DataAccess {
         @Override
         protected void onPostExecute(Bitmap image) {
             Log.d(LOGTAG, "Getting image task completed!");
+            images.put(mImageId, image);
             mCaller.onTaskCompleted(image);
         }
     }
