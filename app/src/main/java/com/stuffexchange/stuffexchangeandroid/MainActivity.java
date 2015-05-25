@@ -69,8 +69,10 @@ public class MainActivity extends ActionBarActivity {
 
     private class GiftGetter implements OnTaskCompleted {
         private GiftIdArrayAdapter.GiftViewHolder mGiftView;
-        public GiftGetter(GiftIdArrayAdapter.GiftViewHolder giftView) {
+        private int mPosition;
+        public GiftGetter(GiftIdArrayAdapter.GiftViewHolder giftView, int position) {
             mGiftView = giftView;
+            mPosition = position;
         }
         @Override
         public void onTaskCompleted(Object o) {
@@ -84,10 +86,11 @@ public class MainActivity extends ActionBarActivity {
                 // populate the view
                 Gift gift = (Gift) o;
                 ImageView giftImageView = mGiftView.giftImageView;
+                giftImageView.setTag(mPosition);
                 if (gift.hasImages()) {
                     String imageId = gift.getCoverImage() + "_thumb";
                     Log.d(LOGTAG, "Image Id: " + imageId);
-                    dataAccess.GetImage(new CoverImageGetter(giftImageView), imageId);
+                    dataAccess.GetImage(new CoverImageGetter(giftImageView, mPosition), imageId);
                 } else {
                     giftImageView.setImageBitmap(null);
                 }
@@ -100,8 +103,10 @@ public class MainActivity extends ActionBarActivity {
 
     private class CoverImageGetter implements OnTaskCompleted {
         ImageView mImageView;
-        public CoverImageGetter(ImageView imageView) {
+        int mPosition;
+        public CoverImageGetter(ImageView imageView, int position) {
             mImageView = imageView;
+            mPosition = position;
         }
         @Override
         public void onTaskCompleted(Object o) {
@@ -113,10 +118,12 @@ public class MainActivity extends ActionBarActivity {
                 toast.show();
             }
             else {
-                Bitmap image = (Bitmap) o;
-                // TODO: Add to cache
-                // TODO: handle fast scrolling (don't set the image if someone else did)
-                mImageView.setImageBitmap(image);
+                if ((int)mImageView.getTag() == mPosition) {
+                    Bitmap image = (Bitmap) o;
+                    // TODO: Add to cache
+                    // TODO: handle fast scrolling (don't set the image if someone else did)
+                    mImageView.setImageBitmap(image);
+                }
             }
         }
     }
@@ -156,7 +163,7 @@ public class MainActivity extends ActionBarActivity {
             }
 
             String giftId = getItem(position);
-            dataAccess.GetGift(new GiftGetter(holder), giftId);
+            dataAccess.GetGift(new GiftGetter(holder, position), giftId);
             return row;
         }
 
