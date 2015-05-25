@@ -88,7 +88,10 @@ public class MainActivity extends ActionBarActivity {
                     String imageId = gift.getCoverImage() + "_thumb";
                     Log.d(LOGTAG, "Image Id: " + imageId);
                     dataAccess.GetImage(new CoverImageGetter(giftImageView), imageId);
+                } else {
+                    giftImageView.setImageBitmap(null);
                 }
+
                 mGiftView.titleTextView.setText(gift.getTitle());
                 mGiftView.descriptionTextView.setText(gift.getDescription());
             }
