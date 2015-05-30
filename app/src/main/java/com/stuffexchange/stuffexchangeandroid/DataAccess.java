@@ -7,9 +7,12 @@ import android.util.Log;
 
 import com.google.gson.Gson;
 
+import org.json.JSONObject;
+
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
@@ -27,14 +30,21 @@ public class DataAccess {
         images = new HashMap<>();
     }
 
+    public void MakeOffer(OnTaskCompleted caller, String giftId, String userId, String token) {
+        new AsyncMakeOffer(caller, giftId, userId, token).execute();
+    }
+
+
+    public void GetUser(OnTaskCompleted caller, String userId, String token) {
+        new AsyncGetUser(caller, userId, token).execute();
+
+    }
     public void GetGiftIds(OnTaskCompleted caller) {
         new AsyncGetGiftIds(caller).execute();
     }
-
     public void GetGift(OnTaskCompleted caller, String giftId) {
         new AsyncGetGift(caller, giftId).execute();
     }
-
     public void GetImage(OnTaskCompleted caller, String imageId) {
         if (!images.containsKey(imageId)) {
             new AsyncGetImage(caller, imageId).execute();
@@ -45,13 +55,18 @@ public class DataAccess {
 
     }
 
-    protected String get(String uri) {
+    private String get(String uri, Map<String, String> headers) {
         try {
             URL url = new URL(uri);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setReadTimeout(10000);
             conn.setConnectTimeout(15000);
             conn.setRequestMethod("GET");
+            if (headers != null) {
+                for (Map.Entry<String, String> header : headers.entrySet()) {
+                    conn.setRequestProperty(header.getKey(), header.getValue());
+                }
+            }
             conn.setDoInput(true);
 
             int responseCode = conn.getResponseCode();
@@ -71,6 +86,167 @@ public class DataAccess {
         } catch (Exception ex) {
             Log.d(LOGTAG, ex.getMessage());
             return null;
+        }
+    }
+    private String get(String uri) {
+        return get(uri, null);
+        // try {
+        //     URL url = new URL(uri);
+        //     HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        //     conn.setReadTimeout(10000);
+        //     conn.setConnectTimeout(15000);
+        //     conn.setRequestMethod("GET");
+        //     conn.setDoInput(true);
+
+        //     int responseCode = conn.getResponseCode();
+        //     // read responsebody into a string
+        //     String responseBody = null;
+        //     if (responseCode == 200) {
+        //         StringBuilder sb = new StringBuilder();
+        //         InputStreamReader streamReader = new InputStreamReader(conn.getInputStream());
+        //         BufferedReader reader = new BufferedReader(streamReader);
+        //         String line;
+        //         while ((line = reader.readLine()) != null) {
+        //             sb.append(line).append("\n");
+        //         }
+        //         responseBody = sb.toString();
+        //     }
+        //     return responseBody;
+        // } catch (Exception ex) {
+        //     Log.d(LOGTAG, ex.getMessage());
+        //     return null;
+        // }
+    }
+
+    private String put(String uri, Map<String, String> headers, Map<String, String> body) {
+        // TODO: handle when no body
+        JSONObject jsonBody = new JSONObject(body);
+        try {
+            URL url = new URL(uri);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("PUT");
+            if (headers != null) {
+                for (Map.Entry<String, String> header : headers.entrySet()) {
+                    Log.d(LOGTAG, "Setting header " + header.getKey() + " to " + header.getValue());
+                    conn.setRequestProperty(header.getKey(), header.getValue());
+                }
+            }
+            conn.setReadTimeout(10000);
+            conn.setConnectTimeout(15000);
+            conn.setDoOutput(true);
+            // TODO: handle when no body
+            OutputStreamWriter writer = new OutputStreamWriter(conn.getOutputStream());
+            writer.write(jsonBody.toString());
+            writer.flush();
+
+            int responseCode = conn.getResponseCode();
+            // read responsebody into a string
+            Log.d(LOGTAG, "POST response code: " + responseCode);
+            String responseBody = null;
+            if (responseCode == 200) {
+                StringBuilder sb = new StringBuilder();
+                InputStreamReader streamReader = new InputStreamReader(conn.getInputStream());
+                BufferedReader reader = new BufferedReader(streamReader);
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    sb.append(line).append("\n");
+                }
+                responseBody = sb.toString();
+            }
+            return responseBody;
+        } catch (Exception ex) {
+            Log.d(LOGTAG, "got exception " + ex.toString());
+            return null;
+        }
+    }
+
+    private class AsyncMakeOffer extends AsyncTask<Void, Void, String> {
+        private OnTaskCompleted caller;
+        private String uri;
+        private Map<String, String> body;
+        private Map<String, String> headers;
+
+        public AsyncMakeOffer(OnTaskCompleted caller, String giftId, String userId, String token) {
+            this.caller = caller;
+            this.uri = BASE_URL + "gifts/" + giftId;
+            headers = new HashMap<>();
+            String authHeader =  "Token " + token;
+            headers.put("Authorization", authHeader);
+            headers.put("Content-Type", "application/vnd.stuffexchange.MakeOffer+json");
+            // put userId in body
+            body = new HashMap<>();
+            body.put("User", userId);
+        }
+
+        @Override
+        protected String doInBackground(Void... params) {
+            return DataAccess.this.put(uri, headers, body);
+        }
+
+        @Override protected void onPostExecute(String responseBody) {
+            if (responseBody == null) {
+                Log.d(LOGTAG, "MakeOffer response is null");
+                caller.onTaskCompleted(false);
+            } else {
+                caller.onTaskCompleted(true);
+            }
+        }
+    }
+
+    private class AsyncGetUser extends AsyncTask<Void, Void, String> {
+        private OnTaskCompleted mCaller;
+        private String authHeader;
+        private String mUri;
+
+        public AsyncGetUser(OnTaskCompleted caller, String userId, String token) {
+            mCaller = caller;
+            authHeader =  "Token " + token;
+            mUri = BASE_URL + "users/" + userId;
+        }
+
+        @Override
+        protected String doInBackground(Void... params) {
+            Map<String, String> headers = new HashMap<>();
+            headers.put("Authorization", authHeader);
+            return DataAccess.this.get(mUri, headers);
+            // try {
+            //     URL url = new URL(mUri);
+            //     HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            //     conn.setReadTimeout(10000);
+            //     conn.setConnectTimeout(15000);
+            //     conn.setRequestMethod("GET");
+            //     conn.setRequestProperty("Authorization", authHeader);
+            //     conn.setDoInput(true);
+
+            //     int responseCode = conn.getResponseCode();
+            //     // read responsebody into a string
+            //     String responseBody = null;
+            //     if (responseCode == 200) {
+            //         StringBuilder sb = new StringBuilder();
+            //         InputStreamReader streamReader = new InputStreamReader(conn.getInputStream());
+            //         BufferedReader reader = new BufferedReader(streamReader);
+            //         String line;
+            //         while ((line = reader.readLine()) != null) {
+            //             sb.append(line).append("\n");
+            //         }
+            //         responseBody = sb.toString();
+            //     }
+            //     return responseBody;
+            // } catch (Exception ex) {
+            //     Log.d(LOGTAG, ex.getMessage());
+            //     return null;
+            // }
+        }
+
+        @Override
+        protected void onPostExecute(String responseBody) {
+            if (responseBody == null) {
+                Log.d(LOGTAG, "User is null");
+                mCaller.onTaskCompleted(null);
+            } else {
+                User user = User.fromJsonString(responseBody);
+                mCaller.onTaskCompleted(user);
+            }
         }
     }
 

@@ -13,6 +13,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -42,18 +43,30 @@ public class LoginActivity extends ActionBarActivity {
         });
     }
 
-    private class AsyncHttpLogin extends AsyncTask<String, Void, String> {
+    private class AsyncHttpLogin extends AsyncTask<String, Void, JSONObject> {
         @Override
-        protected String doInBackground(String... params) {
+        protected JSONObject doInBackground(String... params) {
             return attemptLogin();
         }
         @Override
-        protected void onPostExecute(String token) {
-            if (token != null) {
-                Log.d(LOGTAG, token);
-                Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-                intent.putExtra("Token", token);
-                startActivity(intent);
+        protected void onPostExecute(JSONObject response) {
+            if (response != null) {
+                try {
+                    StuffExchangeApplication app = (StuffExchangeApplication) LoginActivity.this.getApplication();
+                    String token = response.getString("Token");
+                    String userId = response.getString("UserId");
+                    app.setToken(token);
+                    app.setUserId(userId);
+                    Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                    startActivity(intent);
+                } catch (JSONException ex) {
+                    Log.e(LOGTAG, ex.getMessage());
+                    CharSequence message = "Could not understand response from server";
+                    Context context = getApplicationContext();
+                    int duration = Toast.LENGTH_SHORT;
+                    Toast toast = Toast.makeText(context, message, duration);
+                    toast.show();
+                }
             }
             else
             {
@@ -61,19 +74,17 @@ public class LoginActivity extends ActionBarActivity {
                 CharSequence message = "Login failed! Please try again";
                 Context context = getApplicationContext();
                 int duration = Toast.LENGTH_SHORT;
-
                 Toast toast = Toast.makeText(context, message, duration);
                 toast.show();
             }
         }
     }
 
-    private String attemptLogin() {
+    private JSONObject attemptLogin() {
         EditText emailEditText = (EditText)findViewById(R.id.emailEditText);
         String email = emailEditText.getText().toString();
         EditText passwordEditText = (EditText)findViewById(R.id.passwordEditText);
         String password = passwordEditText.getText().toString();
-        //String auth_uri = "http://www.stuffexchange.dev/auth";
         String auth_uri = "http://10.0.2.2:3579/auth";
         Map<String, String> params = new HashMap<>();
         params.put("username", email);
@@ -103,7 +114,7 @@ public class LoginActivity extends ActionBarActivity {
             String body = sb.toString();
             Log.d(LOGTAG, "Body: " + body);
             JSONObject obj = new JSONObject(sb.toString());
-            return obj.getString("Token");
+            return obj;
         } catch (Exception ex) {
             Log.d(LOGTAG, "got exception " + ex.toString());
             ex.printStackTrace();

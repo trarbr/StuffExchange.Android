@@ -10,6 +10,7 @@
         android:required="true" />
 
     <application
+        android:name=".StuffExchangeApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -39,7 +40,10 @@
             android:name=".AddImageActivity"
             android:label="@string/title_activity_add_image" >
         </activity>
-
+        <activity
+            android:name=".MakeOfferActivity"
+            android:label="@string/title_activity_make_offer" >
+        </activity>
     </application>
 
 </manifest>

@@ -1,5 +1,7 @@
 package com.stuffexchange.stuffexchangeandroid;
 
+import android.util.Log;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -20,13 +22,13 @@ public class Gift {
         }
     }
     private String id;
-    private User.UserIdentity user;
+    private UserIdentity user;
     private String title;
     private String description;
     private List<String> images;
     private List<Comment> comments;
-    private List<String> wishers;
-    private String offeredTo;
+    private List<UserIdentity> wishers;
+    private UserIdentity offeredTo;
     private GiftState state;
 
     public String getTitle() {
@@ -41,12 +43,49 @@ public class Gift {
         return description;
     }
 
+    public String getStatus() {
+        return state.name();
+    }
+
+    public String getOfferedTo() {
+        return offeredTo.getUsername();
+    }
+
+    public UserIdentity getUser() {
+        return user;
+    }
+
+    public List<Comment> getComments() {
+        return comments;
+    }
+
+    public Boolean isOffered() {
+        return offeredTo != null;
+    }
+
+    public List<UserIdentity> getWishers() {
+        return wishers;
+    }
+
+    public GiftState getGiftState() {
+        return state;
+    }
+
+    public Boolean hasWishers() {
+        return (wishers != null && wishers.size() > 0);
+    }
+
+
+    public Boolean hasComments() {
+        return (comments != null && comments.size() > 0);
+    }
+
     public Boolean hasImages() {
-        if (images == null) {
-            return false;
+        if (images != null && images.size() > 0) {
+            return true;
         }
         else {
-            return true;
+            return false;
         }
     }
 
@@ -57,18 +96,47 @@ public class Gift {
             gift.id = json.getString("Id");
             gift.title = json.getString("Title");
             gift.description = json.getString("Description");
-            JSONArray images = json.getJSONArray("Images");
-            if (images.length() > 0) {
-                gift.images = new ArrayList<String>();
+            JSONObject user = json.getJSONObject("User");
+            gift.user = UserIdentity.fromJson(user);
+            gift.images = new ArrayList<>();
+            if (json.has("Images")) {
+                JSONArray images = json.getJSONArray("Images");
                 for (int i=0; i < images.length(); i++) {
                     String imageId = (String) images.get(i);
                     gift.images.add(i, imageId);
                 }
-            } else {
-                gift.images = null;
             }
+            gift.comments = new ArrayList<>();
+            if (json.has("Comments")) {
+                JSONArray comments = json.getJSONArray("Comments");
+                for (int i=0; i < comments.length(); i++) {
+                    JSONObject commentJson = (JSONObject) comments.get(i);
+                    Comment comment = Comment.fromJson(commentJson);
+                    gift.comments.add(comment);
+                }
+            }
+            gift.wishers = new ArrayList<>();
+            if (json.has("Wishers")) {
+                JSONArray wishers = json.getJSONArray("Wishers");
+                for (int i=0; i < wishers.length(); i++) {
+                    JSONObject wisherJson = (JSONObject) wishers.get(i);
+                    UserIdentity wisher = UserIdentity.fromJson(wisherJson);
+                    gift.wishers.add(wisher);
+                }
+            }
+            String offeredTo = json.getString("OfferedTo");
+            if (offeredTo.equals("null")) {
+                gift.offeredTo = null;
+            } else {
+                JSONObject offeredToJson = new JSONObject(offeredTo);
+                gift.offeredTo = UserIdentity.fromJson(offeredToJson);
+            }
+            int state = json.getInt("State");
+            gift.state = GiftState.values()[state];
+
             return gift;
         } catch (JSONException ex) {
+            Log.d("DataAccess", ex.getMessage());
             return null;
         }
     }

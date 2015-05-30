@@ -9,15 +9,14 @@
         android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:src="@drawable/fiat_small"
-        />
+        android:src="@drawable/default_image" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="Title"
-        android:id="@+id/giftTitle"
+        android:text="No title"
+        android:id="@+id/commentUser"
         android:layout_alignParentTop="true"
         android:layout_toRightOf="@+id/giftImageView"
         android:layout_toEndOf="@+id/giftImageView" />
@@ -26,9 +25,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="This is an awesome thing. bla bla bal bla bbla. bla bla bal bla bbla. bla bla bal bla bbla. bla bla bal bla bbla. bla bla bal bla bbla"
+        android:text="No description"
         android:id="@+id/giftDescription"
-        android:layout_below="@+id/giftTitle"
+        android:layout_below="@+id/commentUser"
         android:layout_toRightOf="@+id/giftImageView"
         android:layout_toEndOf="@+id/giftImageView"
         android:layout_alignBottom="@+id/giftImageView" />

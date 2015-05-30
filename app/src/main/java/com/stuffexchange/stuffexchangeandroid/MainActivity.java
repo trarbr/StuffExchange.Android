@@ -2,6 +2,7 @@ package com.stuffexchange.stuffexchangeandroid;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
@@ -23,19 +24,46 @@ import java.util.List;
 
 public class MainActivity extends ActionBarActivity {
     private static final String LOGTAG = "StuffExchange";
-    private String token;
     private DataAccess dataAccess;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        String token = getIntent().getStringExtra("Token");
+        StuffExchangeApplication app = (StuffExchangeApplication) getApplication();
+        String token = app.getToken();
+        String userId = app.getUserId();
         Log.d(LOGTAG, "Got token: " + token);
-        this.token = token;
-
-        dataAccess = new DataAccess();
+        Log.d(LOGTAG, "Got userId: " + userId);
+        dataAccess = app.getDataAccess();
+        TextView greeterTextView = (TextView) findViewById(R.id.greeterTextView);
+        dataAccess.GetUser(new UserGetter(greeterTextView), userId, token);
         dataAccess.GetGiftIds(new GiftIdsGetter());
+    }
+
+    private class UserGetter implements OnTaskCompleted {
+        private TextView mGreeterTextView;
+        public UserGetter(TextView greeterTextView) {
+            mGreeterTextView = greeterTextView;
+        }
+        @Override
+        public void onTaskCompleted(Object o) {
+            if (o == null) {
+                String message = "Could not get user from server";
+                Context context = getApplicationContext();
+                int duration = Toast.LENGTH_SHORT;
+                Toast toast = Toast.makeText(context, message, duration);
+                toast.show();
+            }
+            else {
+                User user = (User) o;
+                Log.d(LOGTAG, "Got user " + user.getUserIdentity().getUsername());
+                String username = user.getUserIdentity().getUsername();
+                Resources res = getResources();
+                String message = String.format(res.getString(R.string.MainGreeterLabel), username);
+                mGreeterTextView.setText(message);
+            }
+        }
     }
 
     private class GiftIdsGetter implements OnTaskCompleted {
@@ -83,7 +111,6 @@ public class MainActivity extends ActionBarActivity {
                 Toast toast = Toast.makeText(context, message, duration);
                 toast.show();
             } else {
-                // populate the view
                 Gift gift = (Gift) o;
                 ImageView giftImageView = mGiftView.giftImageView;
                 giftImageView.setTag(mPosition);
@@ -92,7 +119,7 @@ public class MainActivity extends ActionBarActivity {
                     Log.d(LOGTAG, "Image Id: " + imageId);
                     dataAccess.GetImage(new CoverImageGetter(giftImageView, mPosition), imageId);
                 } else {
-                    giftImageView.setImageBitmap(null);
+                    giftImageView.setImageResource(R.drawable.default_image);
                 }
 
                 mGiftView.titleTextView.setText(gift.getTitle());
@@ -120,8 +147,6 @@ public class MainActivity extends ActionBarActivity {
             else {
                 if ((int)mImageView.getTag() == mPosition) {
                     Bitmap image = (Bitmap) o;
-                    // TODO: Add to cache
-                    // TODO: handle fast scrolling (don't set the image if someone else did)
                     mImageView.setImageBitmap(image);
                 }
             }
@@ -131,7 +156,7 @@ public class MainActivity extends ActionBarActivity {
     private class GiftIdArrayAdapter extends ArrayAdapter<String> {
         HashMap<String, Integer> mIdMap = new HashMap<>();
         public GiftIdArrayAdapter(Context context, List<String> gifts) {
-            super(context, R.layout.gift_layout, gifts);
+            super(context, R.layout.gift_list_layout, gifts);
             for (int i = 0; i < gifts.size(); i++) {
                 mIdMap.put(gifts.get(i), i);
             }
@@ -144,7 +169,7 @@ public class MainActivity extends ActionBarActivity {
 
             public GiftViewHolder(View v) {
                 giftImageView = (ImageView) v.findViewById(R.id.giftImageView);
-                titleTextView = (TextView) v.findViewById(R.id.giftTitle);
+                titleTextView = (TextView) v.findViewById(R.id.commentUser);
                 descriptionTextView = (TextView) v.findViewById(R.id.giftDescription);
             }
 
@@ -153,17 +178,17 @@ public class MainActivity extends ActionBarActivity {
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
             View row = convertView;
-            GiftViewHolder holder = null;
+            GiftViewHolder viewHolder = null;
             if (row == null) {
-                row = getLayoutInflater().inflate(R.layout.gift_layout, parent, false);
-                holder = new GiftViewHolder(row);
-                row.setTag(holder);
+                row = getLayoutInflater().inflate(R.layout.gift_list_layout, parent, false);
+                viewHolder = new GiftViewHolder(row);
+                row.setTag(viewHolder);
             } else {
-                holder = (GiftViewHolder) row.getTag();
+                viewHolder = (GiftViewHolder) row.getTag();
             }
 
             String giftId = getItem(position);
-            dataAccess.GetGift(new GiftGetter(holder, position), giftId);
+            dataAccess.GetGift(new GiftGetter(viewHolder, position), giftId);
             return row;
         }
 

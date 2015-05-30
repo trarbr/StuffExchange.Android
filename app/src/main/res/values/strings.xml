@@ -7,12 +7,14 @@
     <string name="Password">Password</string>
     <string name="LogInButtonText">Go!</string>
     <string name="title_activity_main">Your feed</string>
-
+    <string name="MainGreeterLabel">Hi %1$s! Here\'s what we found for you!</string>
     <string name="GiftTitleLabel">Title</string>
     <string name="GiftDescriptionLabel">Description</string>
     <string name="title_activity_new_gift">New gift</string>
-    <string name="title_activity_gift">GiftActivity</string>
+    <string name="title_activity_gift">View Gift</string>
+
+    <string name="title_activity_add_image">AddImageActivity</string>
+    <string name="title_activity_make_offer">MakeOfferActivity</string>
 
     <string name="hello_world">Hello world!</string>
-    <string name="title_activity_add_image">AddImageActivity</string>
 </resources>
