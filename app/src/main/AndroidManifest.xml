@@ -20,7 +20,6 @@
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -37,12 +36,16 @@
             android:label="@string/title_activity_gift" >
         </activity>
         <activity
-            android:name=".AddImageActivity"
-            android:label="@string/title_activity_add_image" >
-        </activity>
-        <activity
             android:name=".MakeOfferActivity"
             android:label="@string/title_activity_make_offer" >
+        </activity>
+        <activity
+            android:name=".EditGiftActivity"
+            android:label="@string/title_activity_edit_gift" >
+        </activity>
+        <activity
+            android:name=".ViewImageActivity"
+            android:label="@string/title_activity_view_image" >
         </activity>
     </application>
 

@@ -46,11 +46,11 @@ public class User {
                 }
             }
             user.wishList = new ArrayList<>();
-            if (json.has("WishList")) {
-                JSONArray wishList = json.getJSONArray("WishList");
+            if (json.has("Wishlist")) {
+                JSONArray wishList = json.getJSONArray("Wishlist");
                 for (int i=0; i < wishList.length(); i++) {
                     String giftId = (String) wishList.get(i);
-                    user.wishList.add(i, giftId);
+                    user.wishList.add(giftId);
                 }
             }
             user.offers = new ArrayList<>();

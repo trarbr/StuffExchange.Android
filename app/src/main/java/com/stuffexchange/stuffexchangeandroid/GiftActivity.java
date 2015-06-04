@@ -1,16 +1,24 @@
 package com.stuffexchange.stuffexchangeandroid;
 
+import android.app.ActionBar;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.media.Image;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.HorizontalScrollView;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -25,6 +33,7 @@ public class GiftActivity extends ActionBarActivity {
     private String token;
     private String userId;
     private DataAccess dataAccess;
+    private int pixels;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,13 +41,15 @@ public class GiftActivity extends ActionBarActivity {
         setContentView(R.layout.activity_gift);
         giftId = getIntent().getStringExtra("GiftId");
         Log.d(LOGTAG, "Got giftId: " + giftId);
+        int dp = 100;
+        DisplayMetrics metrics = getResources().getDisplayMetrics();
+        float px = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, metrics);
+        pixels = Math.round(px);
 
         StuffExchangeApplication app = (StuffExchangeApplication) getApplication();
         userId = app.getUserId();
         token = app.getToken();
         dataAccess = app.getDataAccess();
-        String userId = app.getUserId();
-        String token = app.getToken();
         dataAccess.GetGift(new GiftGetter(), giftId);
     }
 
@@ -59,7 +70,68 @@ public class GiftActivity extends ActionBarActivity {
         }
     }
 
+    private class WishMaker implements OnTaskCompleted {
+        @Override
+        public void onTaskCompleted(Object o) {
+            if (o != null && (Boolean) o) {
+                String message = "Wish made!";
+                Context context = getApplicationContext();
+                int duration = Toast.LENGTH_SHORT;
+                Toast toast = Toast.makeText(context, message, duration);
+                toast.show();
+                dataAccess.GetGift(new GiftGetter(), giftId);
+            } else {
+                String message = "Failed to make wish";
+                Context context = getApplicationContext();
+                int duration = Toast.LENGTH_SHORT;
+                Toast toast = Toast.makeText(context, message, duration);
+                toast.show();
+            }
+        }
+    }
+
+    private class WishUnmaker implements OnTaskCompleted {
+        @Override
+        public void onTaskCompleted(Object o) {
+            if (o != null && (Boolean) o) {
+                String message = "Wish unmade!";
+                Context context = getApplicationContext();
+                int duration = Toast.LENGTH_SHORT;
+                Toast toast = Toast.makeText(context, message, duration);
+                toast.show();
+                dataAccess.GetGift(new GiftGetter(), giftId);
+            } else {
+                String message = "Failed to unmake wish";
+                Context context = getApplicationContext();
+                int duration = Toast.LENGTH_SHORT;
+                Toast toast = Toast.makeText(context, message, duration);
+                toast.show();
+            }
+        }
+    }
+
+    private class OfferAccepter implements OnTaskCompleted {
+        @Override
+        public void onTaskCompleted(Object o) {
+            if (o != null && (Boolean) o) {
+                String message = "Offer accepted!";
+                Context context = getApplicationContext();
+                int duration = Toast.LENGTH_SHORT;
+                Toast toast = Toast.makeText(context, message, duration);
+                toast.show();
+                dataAccess.GetGift(new GiftGetter(), giftId);
+            } else {
+                String message = "Failed to accept offer";
+                Context context = getApplicationContext();
+                int duration = Toast.LENGTH_SHORT;
+                Toast toast = Toast.makeText(context, message, duration);
+                toast.show();
+            }
+        }
+    }
+
     private void setButtons(User user) {
+        // TODO: add button for add comment
         Button makeOfferButton = (Button) findViewById(R.id.makeOfferButton);
         makeOfferButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -73,15 +145,21 @@ public class GiftActivity extends ActionBarActivity {
         makeWishButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO: make wish
+                dataAccess.MakeWish(new WishMaker(), giftId, token);
             }
         });
         Button unmakeWishButton = (Button) findViewById(R.id.unmakeWishButton);
+        unmakeWishButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dataAccess.UnmakeWish(new WishUnmaker(), giftId, token);
+            }
+        });
         Button acceptOfferButton = (Button) findViewById(R.id.acceptOfferButton);
         acceptOfferButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO: accept offer
+                dataAccess.AcceptOffer(new OfferAccepter(), giftId, token);
             }
         });
         Button declineOfferButton = (Button) findViewById(R.id.declineOfferButton);
@@ -101,7 +179,7 @@ public class GiftActivity extends ActionBarActivity {
             if (!user.getWishList().contains(this.giftId)) {
                 makeWishButton.setVisibility(View.VISIBLE);
             } else if (this.gift.getGiftState() != Gift.GiftState.GivenAway) {
-                if (this.gift.getOfferedTo().contains(this.userId)) {
+                if (this.gift.isOffered() && this.gift.getOfferedTo().getId().equals(this.userId)) {
                     acceptOfferButton.setVisibility(View.VISIBLE);
                     declineOfferButton.setVisibility(View.VISIBLE);
                 } else {
@@ -128,9 +206,54 @@ public class GiftActivity extends ActionBarActivity {
         }
     }
 
+    private class ImageSetter implements OnTaskCompleted {
+        private String imageId;
+        public ImageSetter(String imageId) {
+            this.imageId = imageId;
+        }
+        @Override
+        public void onTaskCompleted(Object o) {
+            if (o != null) {
+                Bitmap image = (Bitmap) o;
+                addImageToGallery(imageId, image);
+            } else {
+                Log.d(LOGTAG, "Failed to get image");
+            }
+        }
+    }
+
+    public void addImageToGallery(String imageId, Bitmap image) {
+        LinearLayout galleryLayout = (LinearLayout) findViewById(R.id.galleryLayout);
+        ImageView view = new ImageView(getApplicationContext());
+        view.setImageBitmap(image);
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(pixels, pixels);
+        params.setMargins(0, 0, 10, 0);
+        view.setLayoutParams(params);
+        view.setTag(imageId);
+        view.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String imageId = (String) v.getTag();
+                Intent intent = new Intent(getApplicationContext(), ViewImageActivity.class);
+                intent.putExtra("ImageId", imageId);
+                startActivity(intent);
+            }
+        });
+        galleryLayout.addView(view);
+    }
+
     private void setGift(Gift gift) {
         this.gift = gift;
         dataAccess.GetUser(new ButtonSetter(), this.userId, this.token);
+        if (gift.hasImages()) {
+            for (String imageId : gift.getImages()) {
+                String thumbId = imageId + "_thumb";
+                dataAccess.GetImage(new ImageSetter(imageId), thumbId);
+            }
+        } else {
+            HorizontalScrollView gallery = (HorizontalScrollView) findViewById(R.id.gallery);
+            gallery.setVisibility(View.GONE);
+        }
         TextView titleTextView = (TextView) findViewById(R.id.giftTitle);
         titleTextView.setText(gift.getTitle());
         TextView giftStatusTextView = (TextView) findViewById(R.id.giftStatus);
@@ -139,7 +262,7 @@ public class GiftActivity extends ActionBarActivity {
         descriptionTextView.setText(gift.getDescription());
         TextView offeredToTextView = (TextView) findViewById(R.id.giftOfferedTo);
         if (gift.isOffered()) {
-            offeredToTextView.setText(gift.getOfferedTo());
+            offeredToTextView.setText("Offered to " + gift.getOfferedTo().getUsername());
             offeredToTextView.setVisibility(View.VISIBLE);
         } else {
             offeredToTextView.setVisibility(View.GONE);
@@ -149,9 +272,6 @@ public class GiftActivity extends ActionBarActivity {
             final CommentArrayAdapter adapter = new CommentArrayAdapter(GiftActivity.this, gift.getComments());
             commentsListView.setAdapter(adapter);
         }
-
-
-
     }
 
     private class CommentArrayAdapter extends ArrayAdapter<Comment> {
@@ -212,6 +332,11 @@ public class GiftActivity extends ActionBarActivity {
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             return true;
+        }
+        else if (id == R.id.editGift) {
+            Intent intent = new Intent(getApplicationContext(), EditGiftActivity.class);
+            intent.putExtra("GiftId", this.giftId);
+            startActivity(intent);
         }
 
         return super.onOptionsItemSelected(item);

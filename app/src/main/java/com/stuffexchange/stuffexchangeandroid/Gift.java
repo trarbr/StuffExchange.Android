@@ -31,12 +31,20 @@ public class Gift {
     private UserIdentity offeredTo;
     private GiftState state;
 
+    public String getId() {
+        return id;
+    }
+
     public String getTitle() {
         return title;
     }
 
     public String getCoverImage() {
         return images.get(0);
+    }
+
+    public List<String> getImages() {
+        return images;
     }
 
     public String getDescription() {
@@ -47,8 +55,8 @@ public class Gift {
         return state.name();
     }
 
-    public String getOfferedTo() {
-        return offeredTo.getUsername();
+    public UserIdentity getOfferedTo() {
+        return offeredTo;
     }
 
     public UserIdentity getUser() {
@@ -74,7 +82,6 @@ public class Gift {
     public Boolean hasWishers() {
         return (wishers != null && wishers.size() > 0);
     }
-
 
     public Boolean hasComments() {
         return (comments != null && comments.size() > 0);
@@ -128,7 +135,9 @@ public class Gift {
             if (offeredTo.equals("null")) {
                 gift.offeredTo = null;
             } else {
-                JSONObject offeredToJson = new JSONObject(offeredTo);
+                JSONObject some = new JSONObject(offeredTo);
+                JSONArray fields = some.getJSONArray("Fields");
+                JSONObject offeredToJson = fields.getJSONObject(0);
                 gift.offeredTo = UserIdentity.fromJson(offeredToJson);
             }
             int state = json.getInt("State");

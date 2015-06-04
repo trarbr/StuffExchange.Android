@@ -17,4 +17,6 @@
     <string name="title_activity_make_offer">MakeOfferActivity</string>
 
     <string name="hello_world">Hello world!</string>
+    <string name="title_activity_edit_gift">EditGiftActivity</string>
+    <string name="title_activity_view_image">ViewImageActivity</string>
 </resources>

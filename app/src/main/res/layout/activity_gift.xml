@@ -41,15 +41,16 @@
     <!-- image array -->
     <HorizontalScrollView
         android:id="@+id/gallery"
-        android:layout_alignParentRight="true"
         android:layout_below="@+id/giftOfferedTo"
         android:layout_width="match_parent"
         android:layout_height="100dp">
         <LinearLayout
             android:id="@+id/galleryLayout"
             android:orientation="horizontal"
+            android:gravity="center_vertical"
             android:layout_width="wrap_content"
             android:layout_height="match_parent">
+            <!--
             <ImageView
                 android:layout_marginRight="10dp"
                 android:layout_marginEnd="10dp"
@@ -57,34 +58,7 @@
                 android:layout_height="80dp"
                 android:layout_gravity="center_vertical"
                 android:src="@drawable/default_image" />
-            <ImageView
-                android:layout_marginRight="10dp"
-                android:layout_marginEnd="10dp"
-                android:layout_width="80dp"
-                android:layout_height="80dp"
-                android:layout_gravity="center_vertical"
-                android:src="@drawable/default_image" />
-            <ImageView
-                android:layout_marginRight="10dp"
-                android:layout_marginEnd="10dp"
-                android:layout_width="80dp"
-                android:layout_height="80dp"
-                android:layout_gravity="center_vertical"
-                android:src="@drawable/default_image" />
-            <ImageView
-                android:layout_marginRight="10dp"
-                android:layout_marginEnd="10dp"
-                android:layout_width="80dp"
-                android:layout_height="80dp"
-                android:layout_gravity="center_vertical"
-                android:src="@drawable/default_image" />
-            <ImageView
-                android:layout_marginRight="10dp"
-                android:layout_marginEnd="10dp"
-                android:layout_width="80dp"
-                android:layout_height="80dp"
-                android:layout_gravity="center_vertical"
-                android:src="@drawable/default_image" />
+            -->
         </LinearLayout>
     </HorizontalScrollView>
 
@@ -97,26 +71,31 @@
         <Button
             android:id="@+id/makeWishButton"
             android:text="Make wish"
+            android:visibility="gone"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
         <Button
             android:id="@+id/unmakeWishButton"
             android:text="Unmake wish"
+            android:visibility="gone"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
         <Button
             android:id="@+id/makeOfferButton"
             android:text="Make offer"
+            android:visibility="gone"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
         <Button
             android:id="@+id/acceptOfferButton"
             android:text="Accept offer"
+            android:visibility="gone"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
         <Button
             android:id="@+id/declineOfferButton"
             android:text="Decline offer"
+            android:visibility="gone"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
 
