@@ -98,7 +98,6 @@ public class EditGiftActivity extends ActionBarActivity {
         }
     }
 
-
     private class GiftGetter implements OnTaskCompleted {
         @Override
         public void onTaskCompleted(Object o) {

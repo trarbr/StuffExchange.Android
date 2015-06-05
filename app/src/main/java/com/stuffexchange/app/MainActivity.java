@@ -158,8 +158,8 @@ public class MainActivity extends ActionBarActivity {
     }
 
     private class GiftIdArrayAdapter extends ArrayAdapter<String> {
-        public GiftIdArrayAdapter(Context context, List<String> gifts) {
-            super(context, R.layout.gift_list_layout, gifts);
+        public GiftIdArrayAdapter(Context context, List<String> giftIds) {
+            super(context, R.layout.gift_list_layout, giftIds);
         }
 
         public class GiftViewHolder {
