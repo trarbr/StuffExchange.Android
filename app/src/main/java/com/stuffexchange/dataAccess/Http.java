@@ -33,7 +33,6 @@ class Http {
             conn.setDoInput(true);
 
             int responseCode = conn.getResponseCode();
-            // read responsebody into a string
             String responseBody = null;
             if (responseCode == 200) {
                 StringBuilder sb = new StringBuilder();
@@ -78,7 +77,6 @@ class Http {
             }
 
             int responseCode = conn.getResponseCode();
-            // read responsebody into a string
             Log.d(LOGTAG, "PUT response code: " + responseCode);
             String responseBody = null;
             if (responseCode == 200) {
@@ -119,7 +117,6 @@ class Http {
             }
 
             int responseCode = conn.getResponseCode();
-            // read responsebody into a string
             Log.d(LOGTAG, "POST response code: " + responseCode);
             String responseBody = null;
             if (responseCode == 200) {
