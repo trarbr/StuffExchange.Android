@@ -17,13 +17,15 @@ import java.util.Map;
 
 class Http {
     private static String LOGTAG = "DataAccess";
+    private static int READ_TIMEOUT = 10000;
+    private static int CONNECTION_TIMEOUT = 15000;
 
     public static String get(String uri, Map<String, String> headers) {
         try {
             URL url = new URL(uri);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setReadTimeout(10000);
-            conn.setConnectTimeout(15000);
+            conn.setReadTimeout(READ_TIMEOUT);
+            conn.setConnectTimeout(CONNECTION_TIMEOUT);
             conn.setRequestMethod("GET");
             if (headers != null) {
                 for (Map.Entry<String, String> header : headers.entrySet()) {
@@ -66,8 +68,8 @@ class Http {
                     conn.setRequestProperty(header.getKey(), header.getValue());
                 }
             }
-            conn.setReadTimeout(10000);
-            conn.setConnectTimeout(15000);
+            conn.setReadTimeout(READ_TIMEOUT);
+            conn.setConnectTimeout(CONNECTION_TIMEOUT);
             if (requestBody != null) {
                 conn.setDoOutput(true);
                 JSONObject jsonBody = new JSONObject(requestBody);
@@ -106,8 +108,8 @@ class Http {
                     conn.setRequestProperty(header.getKey(), header.getValue());
                 }
             }
-            conn.setReadTimeout(10000);
-            conn.setConnectTimeout(15000);
+            conn.setReadTimeout(READ_TIMEOUT);
+            conn.setConnectTimeout(CONNECTION_TIMEOUT);
             if (requestBody != null) {
                 conn.setDoOutput(true);
                 JSONObject jsonBody = new JSONObject(requestBody);
@@ -169,8 +171,8 @@ class Http {
                     conn.setRequestProperty(header.getKey(), header.getValue());
                 }
             }
-            conn.setReadTimeout(10000);
-            conn.setConnectTimeout(15000);
+            conn.setReadTimeout(READ_TIMEOUT);
+            conn.setConnectTimeout(CONNECTION_TIMEOUT);
             conn.setDoOutput(true);
 
             DataOutputStream writer = new DataOutputStream(conn.getOutputStream());
