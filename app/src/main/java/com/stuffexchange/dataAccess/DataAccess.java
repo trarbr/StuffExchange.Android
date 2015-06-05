@@ -20,7 +20,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
@@ -33,6 +32,8 @@ public class DataAccess {
     private final String LOGTAG = "DataAccess";
     private final String BASE_URL = "http://10.0.2.2:3579/";
     private final String GIFTS = "gifts/";
+    private final String IMAGES = "images/";
+    private final String USERS = "users/";
     private Map<String, Bitmap> images;
 
     public DataAccess() {
@@ -75,128 +76,12 @@ public class DataAccess {
         new AsyncGetGift(caller, giftId).execute();
     }
     public void GetImage(OnTaskCompleted caller, String imageId) {
-        String uri = BASE_URL + "images/" + imageId + ".jpg";
+        String uri = BASE_URL + IMAGES + imageId + ".jpg";
         if (!images.containsKey(uri)) {
             new AsyncGetImage(caller, imageId).execute();
         }
         else {
             caller.onTaskCompleted(images.get(uri));
-        }
-    }
-
-    private String get(String uri, Map<String, String> headers) {
-        try {
-            URL url = new URL(uri);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setReadTimeout(10000);
-            conn.setConnectTimeout(15000);
-            conn.setRequestMethod("GET");
-            if (headers != null) {
-                for (Map.Entry<String, String> header : headers.entrySet()) {
-                    conn.setRequestProperty(header.getKey(), header.getValue());
-                }
-            }
-            conn.setDoInput(true);
-
-            int responseCode = conn.getResponseCode();
-            // read responsebody into a string
-            String responseBody = null;
-            if (responseCode == 200) {
-                StringBuilder sb = new StringBuilder();
-                InputStreamReader streamReader = new InputStreamReader(conn.getInputStream());
-                BufferedReader reader = new BufferedReader(streamReader);
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    sb.append(line).append("\n");
-                }
-                responseBody = sb.toString();
-            }
-            return responseBody;
-        } catch (Exception ex) {
-            Log.d(LOGTAG, ex.getMessage());
-            return null;
-        }
-    }
-
-    private String put(String uri, Map<String, String> headers, Map<String, String> requestBody) {
-        try {
-            URL url = new URL(uri);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("PUT");
-            if (headers != null) {
-                for (Map.Entry<String, String> header : headers.entrySet()) {
-                    conn.setRequestProperty(header.getKey(), header.getValue());
-                }
-            }
-            conn.setReadTimeout(10000);
-            conn.setConnectTimeout(15000);
-            if (requestBody != null) {
-                conn.setDoOutput(true);
-                JSONObject jsonBody = new JSONObject(requestBody);
-                OutputStreamWriter writer = new OutputStreamWriter(conn.getOutputStream());
-                writer.write(jsonBody.toString());
-                writer.flush();
-            }
-
-            int responseCode = conn.getResponseCode();
-            // read responsebody into a string
-            Log.d(LOGTAG, "PUT response code: " + responseCode);
-            String responseBody = null;
-            if (responseCode == 200) {
-                StringBuilder sb = new StringBuilder();
-                InputStreamReader streamReader = new InputStreamReader(conn.getInputStream());
-                BufferedReader reader = new BufferedReader(streamReader);
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    sb.append(line).append("\n");
-                }
-                responseBody = sb.toString();
-            }
-            return responseBody;
-        } catch (Exception ex) {
-            Log.d(LOGTAG, "got exception " + ex.toString());
-            return null;
-        }
-    }
-
-    private String post(String uri, Map<String, String> headers, Map<String, String> requestBody) {
-        try {
-            URL url = new URL(uri);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("POST");
-            if (headers != null) {
-                for (Map.Entry<String, String> header : headers.entrySet()) {
-                    conn.setRequestProperty(header.getKey(), header.getValue());
-                }
-            }
-            conn.setReadTimeout(10000);
-            conn.setConnectTimeout(15000);
-            if (requestBody != null) {
-                conn.setDoOutput(true);
-                JSONObject jsonBody = new JSONObject(requestBody);
-                OutputStreamWriter writer = new OutputStreamWriter(conn.getOutputStream());
-                writer.write(jsonBody.toString());
-                writer.flush();
-            }
-
-            int responseCode = conn.getResponseCode();
-            // read responsebody into a string
-            Log.d(LOGTAG, "POST response code: " + responseCode);
-            String responseBody = null;
-            if (responseCode == 200) {
-                StringBuilder sb = new StringBuilder();
-                InputStreamReader streamReader = new InputStreamReader(conn.getInputStream());
-                BufferedReader reader = new BufferedReader(streamReader);
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    sb.append(line).append("\n");
-                }
-                responseBody = sb.toString();
-            }
-            return responseBody;
-        } catch (Exception ex) {
-            Log.d(LOGTAG, "got exception " + ex.getMessage());
-            return null;
         }
     }
 
@@ -322,7 +207,7 @@ public class DataAccess {
 
         @Override
         protected String doInBackground(Void... params) {
-            return DataAccess.this.post(uri, headers, body);
+            return Http.post(uri, headers, body);
         }
 
         @Override
@@ -361,7 +246,7 @@ public class DataAccess {
 
         @Override
         protected String doInBackground(Void... params) {
-            return DataAccess.this.put(uri, headers, null);
+            return Http.put(uri, headers, null);
         }
 
         @Override
@@ -391,7 +276,7 @@ public class DataAccess {
 
         @Override
         protected String doInBackground(Void... params) {
-            return DataAccess.this.put(uri, headers, null);
+            return Http.put(uri, headers, null);
         }
 
         @Override
@@ -420,7 +305,7 @@ public class DataAccess {
 
         @Override
         protected String doInBackground(Void... params) {
-            return DataAccess.this.put(uri, headers, null);
+            return Http.put(uri, headers, null);
         }
 
         @Override
@@ -447,14 +332,13 @@ public class DataAccess {
             String authHeader =  "Token " + token;
             headers.put("Authorization", authHeader);
             headers.put("Content-Type", "application/vnd.stuffexchange.MakeOffer+json");
-            // put userId in body
             body = new HashMap<>();
             body.put("User", userId);
         }
 
         @Override
         protected String doInBackground(Void... params) {
-            return DataAccess.this.put(uri, headers, body);
+            return Http.put(uri, headers, body);
         }
 
         @Override
@@ -476,7 +360,7 @@ public class DataAccess {
         public AsyncGetUser(OnTaskCompleted caller, String userId, String token) {
             mCaller = caller;
             authHeader =  "Token " + token;
-            mUri = BASE_URL + "users/" + userId;
+            mUri = BASE_URL + USERS + userId;
         }
 
         @Override
@@ -559,7 +443,7 @@ public class DataAccess {
         public AsyncGetImage(OnTaskCompleted caller, String imageId) {
             mCaller = caller;
             mImageId = imageId;
-            mUri = BASE_URL + "images/" + imageId + ".jpg";
+            mUri = BASE_URL + IMAGES + imageId + ".jpg";
         }
 
         @Override
