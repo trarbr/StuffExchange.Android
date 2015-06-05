@@ -2,7 +2,6 @@ package com.stuffexchange.app;
 
 import android.content.Context;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -13,112 +12,69 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.stuffexchange.dataAccess.OnTaskCompleted;
+
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
 
 
 public class LoginActivity extends ActionBarActivity {
     private static final String LOGTAG = "StuffExchange";
+    private StuffExchangeApplication app;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         Log.d(LOGTAG, "started");
+        app = (StuffExchangeApplication) getApplication();
 
         Button loginButton = (Button)findViewById(R.id.loginButton);
         loginButton.setOnClickListener( new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                new AsyncHttpLogin().execute();
+                login();
             }
         });
     }
 
-    private class AsyncHttpLogin extends AsyncTask<String, Void, JSONObject> {
+    private void login() {
+        EditText usernameEditText = (EditText)findViewById(R.id.emailEditText);
+        String username = usernameEditText.getText().toString();
+        EditText passwordEditText = (EditText)findViewById(R.id.passwordEditText);
+        String password = passwordEditText.getText().toString();
+        app.getDataAccess().Login(new OnLogin(), username, password);
+    }
+
+    private class OnLogin implements OnTaskCompleted {
         @Override
-        protected JSONObject doInBackground(String... params) {
-            return attemptLogin();
-        }
-        @Override
-        protected void onPostExecute(JSONObject response) {
-            if (response != null) {
+        public void onTaskCompleted(Object o) {
+            if (o != null) {
                 try {
-                    StuffExchangeApplication app = (StuffExchangeApplication) LoginActivity.this.getApplication();
+                    JSONObject response = (JSONObject) o;
                     String token = response.getString("Token");
                     String userId = response.getString("UserId");
                     app.setToken(token);
                     app.setUserId(userId);
                     Intent intent = new Intent(getApplicationContext(), MainActivity.class);
                     startActivity(intent);
+
                 } catch (JSONException ex) {
-                    Log.e(LOGTAG, ex.getMessage());
-                    CharSequence message = "Could not understand response from server";
+                    Log.d(LOGTAG, "Login JSON response malformed", ex);
+                    CharSequence message = "Login failed! Server response malformed!";
                     Context context = getApplicationContext();
                     int duration = Toast.LENGTH_SHORT;
                     Toast toast = Toast.makeText(context, message, duration);
                     toast.show();
                 }
-            }
-            else
-            {
-                Log.d(LOGTAG, "token was null");
+            } else {
                 CharSequence message = "Login failed! Please try again";
                 Context context = getApplicationContext();
                 int duration = Toast.LENGTH_SHORT;
                 Toast toast = Toast.makeText(context, message, duration);
                 toast.show();
             }
-        }
-    }
 
-    private JSONObject attemptLogin() {
-        EditText emailEditText = (EditText)findViewById(R.id.emailEditText);
-        String email = emailEditText.getText().toString();
-        EditText passwordEditText = (EditText)findViewById(R.id.passwordEditText);
-        String password = passwordEditText.getText().toString();
-        String auth_uri = "http://10.0.2.2:3579/auth";
-        Map<String, String> params = new HashMap<>();
-        params.put("username", email);
-        params.put("password", password);
-        JSONObject json = new JSONObject(params);
-        try {
-            URL url = new URL(auth_uri);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setReadTimeout(10000);
-            conn.setConnectTimeout(15000);
-            conn.setRequestMethod("POST");
-
-            conn.setDoOutput(true);
-            OutputStreamWriter writer = new OutputStreamWriter(conn.getOutputStream());
-            writer.write(json.toString());
-            writer.flush();
-            String response = "Response: " + conn.getResponseCode() + " " + conn.getResponseMessage();
-            Log.d(LOGTAG, response);
-
-            StringBuilder sb = new StringBuilder();
-            InputStreamReader streamReader = new InputStreamReader(conn.getInputStream());
-            BufferedReader reader = new BufferedReader(streamReader);
-            String line;
-            while ((line = reader.readLine()) != null) {
-                sb.append(line).append("\n");
-            }
-            String body = sb.toString();
-            Log.d(LOGTAG, "Body: " + body);
-            JSONObject obj = new JSONObject(sb.toString());
-            return obj;
-        } catch (Exception ex) {
-            Log.d(LOGTAG, "got exception " + ex.toString());
-            ex.printStackTrace();
-            return null;
         }
     }
 

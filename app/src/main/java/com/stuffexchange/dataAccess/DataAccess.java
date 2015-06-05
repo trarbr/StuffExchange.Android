@@ -29,10 +29,15 @@ public class DataAccess {
     private final String GIFTS = "gifts/";
     private final String IMAGES = "images/";
     private final String USERS = "users/";
+    private final String AUTH = "auth/";
     private Map<String, Bitmap> images;
 
     public DataAccess() {
         images = new HashMap<>();
+    }
+
+    public void Login(OnTaskCompleted caller, String username, String password) {
+        new AsyncLogin(caller, username, password).execute();
     }
 
     public void AddImage(OnTaskCompleted caller, String giftId, Uri imageUri, String token) {
@@ -76,6 +81,40 @@ public class DataAccess {
         }
         else {
             caller.onTaskCompleted(images.get(uri));
+        }
+    }
+
+    private class AsyncLogin extends AsyncTask<Void, Void, String> {
+        private OnTaskCompleted caller;
+        private String uri;
+        private Map<String, String> body;
+
+        public AsyncLogin(OnTaskCompleted caller, String username, String password) {
+            this.caller = caller;
+            this.uri = BASE_URL + AUTH;
+            body = new HashMap<>();
+            body.put("Username", username);
+            body.put("Password", password);
+        }
+
+        @Override
+        protected String doInBackground(Void... params) {
+            return Http.post(uri, null, body);
+        }
+        @Override
+        protected void onPostExecute(String responseBody) {
+            if (responseBody == null) {
+                Log.d(LOGTAG, "Login response is null");
+                caller.onTaskCompleted(null);
+            } else {
+                try {
+                    JSONObject response = new JSONObject(responseBody);
+                    caller.onTaskCompleted(response);
+                } catch (JSONException ex) {
+                    Log.d(LOGTAG, "Login resposne error", ex);
+                    caller.onTaskCompleted(null);
+                }
+            }
         }
     }
 
