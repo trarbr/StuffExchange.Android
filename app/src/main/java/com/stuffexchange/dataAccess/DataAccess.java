@@ -4,6 +4,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.provider.ContactsContract;
 import android.util.Log;
 
 import com.google.gson.Gson;
@@ -54,7 +55,6 @@ public class DataAccess {
 
     public void MakeWish(OnTaskCompleted caller, String giftId, String token) {
         new AsyncMakeWish(caller, giftId, token).execute();
-
     }
 
     public void UnmakeWish(OnTaskCompleted caller, String giftId, String token) {
@@ -102,69 +102,7 @@ public class DataAccess {
 
         @Override
         protected String doInBackground(Void... params) {
-            String boundary = "*****";
-            String twoHyphens = "--";
-            String crlf = "\r\n";
-
-            StringBuilder bodyBuilder = new StringBuilder();
-            bodyBuilder.append(twoHyphens).append(boundary).append(crlf);
-            bodyBuilder.append("Content-Disposition: file; name=\"image\"; filename=\"image.jpg\"").append(crlf);
-            bodyBuilder.append("Content-Type: image/jpeg").append(crlf);
-            bodyBuilder.append(crlf);
-
-            StringBuilder end = new StringBuilder();
-            end.append(twoHyphens).append(boundary).append(twoHyphens).append(crlf);
-
-            int maxBufferSize = 8192;
-            int bytesRead;
-            byte[] imageBuffer = new byte[maxBufferSize];
-
-            try {
-                File imageFile = new File(imageUri.getPath());
-                FileInputStream imageStream = new FileInputStream(imageFile);
-
-                URL url = new URL(uri);
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setRequestMethod("POST");
-                conn.setRequestProperty("Connection", "Keep-Alive");
-                conn.setRequestProperty(
-                        "Content-Type", "multipart/form-data;boundary=" + boundary);
-                if (headers != null) {
-                    for (Map.Entry<String, String> header : headers.entrySet()) {
-                        conn.setRequestProperty(header.getKey(), header.getValue());
-                    }
-                }
-                conn.setReadTimeout(10000);
-                conn.setConnectTimeout(15000);
-                conn.setDoOutput(true);
-
-                DataOutputStream writer = new DataOutputStream(conn.getOutputStream());
-                writer.writeBytes(bodyBuilder.toString());
-                while ((bytesRead = imageStream.read(imageBuffer, 0, maxBufferSize)) > 0) {
-                    writer.write(imageBuffer, 0, bytesRead);
-                }
-                writer.writeBytes(end.toString());
-                writer.flush();
-
-                int responseCode = conn.getResponseCode();
-                Log.d(LOGTAG, "AddImage response code: " + responseCode);
-                String responseBody = null;
-                if (responseCode == 200) {
-                    StringBuilder sb = new StringBuilder();
-                    InputStreamReader streamReader = new InputStreamReader(conn.getInputStream());
-                    BufferedReader reader = new BufferedReader(streamReader);
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        sb.append(line).append("\n");
-                    }
-                    responseBody = sb.toString();
-                    Log.d(LOGTAG, responseBody);
-                }
-                return responseBody;
-            } catch (Exception ex) {
-                Log.d(LOGTAG, ex.getMessage());
-                return null;
-            }
+            return Http.postImage(uri, headers, imageUri);
         }
 
         @Override
@@ -289,6 +227,7 @@ public class DataAccess {
             }
         }
     }
+
     private class AsyncMakeWish extends AsyncTask<Void, Void, String> {
         private OnTaskCompleted caller;
         private String uri;
