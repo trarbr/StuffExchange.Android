@@ -176,7 +176,6 @@ public class MainActivity extends ActionBarActivity {
                 titleTextView = (TextView) v.findViewById(R.id.commentUser);
                 descriptionTextView = (TextView) v.findViewById(R.id.giftDescription);
             }
-
         }
 
         @Override

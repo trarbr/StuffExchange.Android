@@ -15,7 +15,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Map;
 
-public class Http {
+class Http {
     private static String LOGTAG = "DataAccess";
 
     public static String get(String uri, Map<String, String> headers) {
