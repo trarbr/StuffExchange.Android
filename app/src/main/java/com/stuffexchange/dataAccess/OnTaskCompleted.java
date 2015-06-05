@@ -1,4 +1,4 @@
-package com.stuffexchange.app;
+package com.stuffexchange.dataAccess;
 
 /**
  * Created by troels on 24-05-2015.

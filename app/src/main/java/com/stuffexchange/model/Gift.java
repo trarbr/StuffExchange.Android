@@ -1,4 +1,4 @@
-package com.stuffexchange.app;
+package com.stuffexchange.model;
 
 import android.util.Log;
 

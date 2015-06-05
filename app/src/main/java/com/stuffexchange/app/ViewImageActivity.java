@@ -9,6 +9,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 
+import com.stuffexchange.dataAccess.DataAccess;
+import com.stuffexchange.dataAccess.OnTaskCompleted;
+
 
 public class ViewImageActivity extends ActionBarActivity {
     private final String LOGTAG = "StuffExchange";

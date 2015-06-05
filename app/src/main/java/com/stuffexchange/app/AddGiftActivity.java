@@ -12,6 +12,9 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.stuffexchange.dataAccess.DataAccess;
+import com.stuffexchange.dataAccess.OnTaskCompleted;
+
 
 public class AddGiftActivity extends ActionBarActivity {
     private final String LOGTAG = "StuffExchange";

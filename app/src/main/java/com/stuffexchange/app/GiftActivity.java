@@ -21,6 +21,12 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.stuffexchange.dataAccess.DataAccess;
+import com.stuffexchange.dataAccess.OnTaskCompleted;
+import com.stuffexchange.model.Comment;
+import com.stuffexchange.model.Gift;
+import com.stuffexchange.model.User;
+
 import java.util.List;
 
 
@@ -243,14 +249,15 @@ public class GiftActivity extends ActionBarActivity {
     private void setGift(Gift gift) {
         this.gift = gift;
         dataAccess.GetUser(new ButtonSetter(), this.userId, this.token);
+        LinearLayout galleryLayout = (LinearLayout) findViewById(R.id.galleryLayout);
+        galleryLayout.removeAllViews();
         if (gift.hasImages()) {
             for (String imageId : gift.getImages()) {
                 String thumbId = imageId + "_thumb";
                 dataAccess.GetImage(new ImageSetter(imageId), thumbId);
             }
         } else {
-            HorizontalScrollView gallery = (HorizontalScrollView) findViewById(R.id.gallery);
-            gallery.setVisibility(View.GONE);
+            galleryLayout.setVisibility(View.GONE);
         }
         TextView titleTextView = (TextView) findViewById(R.id.giftTitle);
         titleTextView.setText(gift.getTitle());

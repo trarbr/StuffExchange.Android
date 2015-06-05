@@ -14,6 +14,11 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.stuffexchange.dataAccess.DataAccess;
+import com.stuffexchange.dataAccess.OnTaskCompleted;
+import com.stuffexchange.model.Gift;
+import com.stuffexchange.model.UserIdentity;
+
 import java.util.List;
 
 

@@ -1,4 +1,4 @@
-package com.stuffexchange.app;
+package com.stuffexchange.model;
 
 import org.json.JSONException;
 import org.json.JSONObject;

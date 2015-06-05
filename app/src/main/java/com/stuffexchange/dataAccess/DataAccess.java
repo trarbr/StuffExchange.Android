@@ -1,4 +1,4 @@
-package com.stuffexchange.app;
+package com.stuffexchange.dataAccess;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -7,6 +7,8 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import com.google.gson.Gson;
+import com.stuffexchange.model.Gift;
+import com.stuffexchange.model.User;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -30,6 +32,7 @@ import java.util.Map;
 public class DataAccess {
     private final String LOGTAG = "DataAccess";
     private final String BASE_URL = "http://10.0.2.2:3579/";
+    private final String GIFTS = "gifts/";
     private Map<String, Bitmap> images;
 
     public DataAccess() {
@@ -113,9 +116,6 @@ public class DataAccess {
             Log.d(LOGTAG, ex.getMessage());
             return null;
         }
-    }
-    private String get(String uri) {
-        return get(uri, null);
     }
 
     private String put(String uri, Map<String, String> headers, Map<String, String> requestBody) {
@@ -209,7 +209,7 @@ public class DataAccess {
         public AsyncAddImage(OnTaskCompleted caller, String giftId, Uri imageUri, String token) {
             this.caller = caller;
             this.imageUri = imageUri;
-            uri = BASE_URL + "gifts/" + giftId;
+            uri = BASE_URL + GIFTS + giftId;
             headers = new HashMap<>();
             String authHeader =  "Token " + token;
             headers.put("Authorization", authHeader);
@@ -285,9 +285,19 @@ public class DataAccess {
         @Override
         protected void onPostExecute(String responseBody) {
             if (responseBody == null) {
-                caller.onTaskCompleted(false);
+                Log.d(LOGTAG, "AddImage response is null");
+                caller.onTaskCompleted(null);
             } else {
-                caller.onTaskCompleted(true);
+                String imageId = null;
+                try {
+                    JSONObject result = new JSONObject(responseBody);
+                    JSONArray fields = result.getJSONArray("Fields");
+                    JSONObject gift = fields.getJSONObject(0);
+                    imageId = gift.getString("Id");
+                } catch (JSONException ex) {
+                    Log.d(LOGTAG, ex.getMessage());
+                }
+                caller.onTaskCompleted(imageId);
             }
         }
     }
@@ -300,7 +310,7 @@ public class DataAccess {
 
         public AsyncAddGift(OnTaskCompleted caller, String title, String description, String token) {
             this.caller = caller;
-            this.uri = BASE_URL + "gifts/";
+            this.uri = BASE_URL + GIFTS;
             headers = new HashMap<>();
             String authHeader =  "Token " + token;
             headers.put("Authorization", authHeader);
@@ -342,7 +352,7 @@ public class DataAccess {
 
         public AsyncAcceptOffer(OnTaskCompleted caller, String giftId, String token) {
             this.caller = caller;
-            this.uri = BASE_URL + "gifts/"  + giftId;
+            this.uri = BASE_URL + GIFTS + giftId;
             headers = new HashMap<>();
             String authHeader =  "Token " + token;
             headers.put("Authorization", authHeader);
@@ -372,7 +382,7 @@ public class DataAccess {
 
         public AsyncUnmakeWish(OnTaskCompleted caller, String giftId, String token) {
             this.caller = caller;
-            this.uri = BASE_URL + "gifts/" + giftId;
+            this.uri = BASE_URL + GIFTS + giftId;
             headers = new HashMap<>();
             String authHeader =  "Token " + token;
             headers.put("Authorization", authHeader);
@@ -401,7 +411,7 @@ public class DataAccess {
 
         public AsyncMakeWish(OnTaskCompleted caller, String giftId, String token) {
             this.caller = caller;
-            this.uri = BASE_URL + "gifts/" + giftId;
+            this.uri = BASE_URL + GIFTS + giftId;
             headers = new HashMap<>();
             String authHeader =  "Token " + token;
             headers.put("Authorization", authHeader);
@@ -432,7 +442,7 @@ public class DataAccess {
 
         public AsyncMakeOffer(OnTaskCompleted caller, String giftId, String userId, String token) {
             this.caller = caller;
-            this.uri = BASE_URL + "gifts/" + giftId;
+            this.uri = BASE_URL + GIFTS + giftId;
             headers = new HashMap<>();
             String authHeader =  "Token " + token;
             headers.put("Authorization", authHeader);
@@ -473,7 +483,7 @@ public class DataAccess {
         protected String doInBackground(Void... params) {
             Map<String, String> headers = new HashMap<>();
             headers.put("Authorization", authHeader);
-            return DataAccess.this.get(mUri, headers);
+            return Http.get(mUri, headers);
         }
 
         @Override
@@ -497,8 +507,8 @@ public class DataAccess {
 
         @Override
         protected String doInBackground(Void... params) {
-            String gifts_uri = BASE_URL + "gifts";
-            return DataAccess.this.get(gifts_uri);
+            String gifts_uri = BASE_URL + GIFTS;
+            return Http.get(gifts_uri);
         }
 
         @Override
@@ -521,13 +531,13 @@ public class DataAccess {
         OnTaskCompleted mCaller;
 
         public AsyncGetGift(OnTaskCompleted caller, String giftId) {
-            mUri = BASE_URL + "gifts/" + giftId;
+            mUri = BASE_URL + GIFTS + giftId;
             mCaller = caller;
         }
 
         @Override
         protected String doInBackground(Void... params) {
-            return DataAccess.this.get(mUri);
+            return Http.get(mUri);
         }
 
         @Override
@@ -554,7 +564,6 @@ public class DataAccess {
 
         @Override
         protected Bitmap doInBackground(Void... params) {
-            Log.d(LOGTAG, "Gettimg image " + mUri);
             try {
                 URL url = new URL(mUri);
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -564,13 +573,10 @@ public class DataAccess {
                 conn.setDoInput(true);
 
                 int responseCode = conn.getResponseCode();
-                Log.d(LOGTAG, "Image get response code: " + responseCode);
                 if (responseCode == 200) {
                     InputStream imageStream = conn.getInputStream();
-                    Log.d(LOGTAG, "Decoding image");
                     Bitmap image = BitmapFactory.decodeStream(imageStream);
                     // TODO: Should probably close the input stream on finally
-                    Log.d(LOGTAG, "Decoding finished");
                     imageStream.close();
                     return image;
                 } else {

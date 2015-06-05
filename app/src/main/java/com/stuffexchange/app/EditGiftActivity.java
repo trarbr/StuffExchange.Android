@@ -23,6 +23,10 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import com.stuffexchange.dataAccess.DataAccess;
+import com.stuffexchange.dataAccess.OnTaskCompleted;
+import com.stuffexchange.model.Gift;
+
 import java.io.File;
 import java.io.IOException;
 
@@ -72,12 +76,7 @@ public class EditGiftActivity extends ActionBarActivity {
                 getContentResolver().notifyChange(photoUri, null);
                 ContentResolver cr = getContentResolver();
                 Bitmap bitmap;
-                try {
-                    bitmap = MediaStore.Images.Media.getBitmap(cr, photoUri);
-                    dataAccess.AddImage(new ImageUploader(), giftId, photoUri, token);
-                } catch (IOException ex) {
-                    // TODO handle
-                }
+                dataAccess.AddImage(new ImageUploader(), giftId, photoUri, token);
             }
         }
     }
@@ -85,7 +84,17 @@ public class EditGiftActivity extends ActionBarActivity {
     private class ImageUploader implements OnTaskCompleted {
         @Override
         public void onTaskCompleted(Object o) {
-           Log.d(LOGTAG, "Image uploaded! Maybe!");
+            if (o != null) {
+                String imageId = (String) o;
+                String thumbId = imageId + "_thumb";
+                dataAccess.GetImage(new ImageSetter(imageId), thumbId);
+            } else {
+                String message = "Could not upload image to server";
+                Context context = getApplicationContext();
+                int duration = Toast.LENGTH_SHORT;
+                Toast toast = Toast.makeText(context, message, duration);
+                toast.show();
+            }
         }
     }
 

@@ -2,6 +2,8 @@ package com.stuffexchange.app;
 
 import android.app.Application;
 
+import com.stuffexchange.dataAccess.DataAccess;
+
 public class StuffExchangeApplication extends Application {
     private String mUserId;
     private String mToken;

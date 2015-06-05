@@ -18,6 +18,11 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.stuffexchange.dataAccess.DataAccess;
+import com.stuffexchange.dataAccess.OnTaskCompleted;
+import com.stuffexchange.model.Gift;
+import com.stuffexchange.model.User;
+
 import java.util.HashMap;
 import java.util.List;
 
@@ -116,7 +121,6 @@ public class MainActivity extends ActionBarActivity {
                 giftImageView.setTag(mPosition);
                 if (gift.hasImages()) {
                     String imageId = gift.getCoverImage() + "_thumb";
-                    Log.d(LOGTAG, "Image Id: " + imageId);
                     dataAccess.GetImage(new CoverImageGetter(giftImageView, mPosition), imageId);
                 } else {
                     giftImageView.setImageResource(R.drawable.default_image);
