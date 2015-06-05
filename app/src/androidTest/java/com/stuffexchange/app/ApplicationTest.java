@@ -1,4 +1,4 @@
-package com.stuffexchange.stuffexchangeandroid;
+package com.stuffexchange.app;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;

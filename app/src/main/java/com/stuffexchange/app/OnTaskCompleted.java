@@ -1,4 +1,4 @@
-package com.stuffexchange.stuffexchangeandroid;
+package com.stuffexchange.app;
 
 /**
  * Created by troels on 24-05-2015.

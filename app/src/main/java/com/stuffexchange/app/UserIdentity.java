@@ -1,4 +1,4 @@
-package com.stuffexchange.stuffexchangeandroid;
+package com.stuffexchange.app;
 
 import org.json.JSONException;
 import org.json.JSONObject;

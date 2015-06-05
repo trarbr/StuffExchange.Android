@@ -1,10 +1,8 @@
-package com.stuffexchange.stuffexchangeandroid;
+package com.stuffexchange.app;
 
-import android.app.ActionBar;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.media.Image;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.DisplayMetrics;

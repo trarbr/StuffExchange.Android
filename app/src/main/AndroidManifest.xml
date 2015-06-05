@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.stuffexchange.stuffexchangeandroid" >
+    package="com.stuffexchange.app" >
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
@@ -10,13 +10,13 @@
         android:required="true" />
 
     <application
-        android:name=".StuffExchangeApplication"
+        android:name="com.stuffexchange.app.StuffExchangeApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
-            android:name=".LoginActivity"
+            android:name="com.stuffexchange.app.LoginActivity"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -24,27 +24,27 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".MainActivity"
+            android:name="com.stuffexchange.app.MainActivity"
             android:label="@string/title_activity_main" >
         </activity>
         <activity
-            android:name=".AddGiftActivity"
+            android:name="com.stuffexchange.app.AddGiftActivity"
             android:label="@string/title_activity_new_gift" >
         </activity>
         <activity
-            android:name=".GiftActivity"
+            android:name="com.stuffexchange.app.GiftActivity"
             android:label="@string/title_activity_gift" >
         </activity>
         <activity
-            android:name=".MakeOfferActivity"
+            android:name="com.stuffexchange.app.MakeOfferActivity"
             android:label="@string/title_activity_make_offer" >
         </activity>
         <activity
-            android:name=".EditGiftActivity"
+            android:name="com.stuffexchange.app.EditGiftActivity"
             android:label="@string/title_activity_edit_gift" >
         </activity>
         <activity
-            android:name=".ViewImageActivity"
+            android:name="com.stuffexchange.app.ViewImageActivity"
             android:label="@string/title_activity_view_image" >
         </activity>
     </application>

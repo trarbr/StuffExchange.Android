@@ -1,4 +1,4 @@
-package com.stuffexchange.stuffexchangeandroid;
+package com.stuffexchange.app;
 
 import android.graphics.Bitmap;
 import android.support.v7.app.ActionBarActivity;

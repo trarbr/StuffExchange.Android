@@ -1,4 +1,4 @@
-package com.stuffexchange.stuffexchangeandroid;
+package com.stuffexchange.app;
 
 import android.content.Context;
 import android.content.Intent;
