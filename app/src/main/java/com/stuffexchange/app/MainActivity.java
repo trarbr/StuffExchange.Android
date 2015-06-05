@@ -158,12 +158,8 @@ public class MainActivity extends ActionBarActivity {
     }
 
     private class GiftIdArrayAdapter extends ArrayAdapter<String> {
-        HashMap<String, Integer> mIdMap = new HashMap<>();
         public GiftIdArrayAdapter(Context context, List<String> gifts) {
             super(context, R.layout.gift_list_layout, gifts);
-            for (int i = 0; i < gifts.size(); i++) {
-                mIdMap.put(gifts.get(i), i);
-            }
         }
 
         public class GiftViewHolder {
@@ -193,18 +189,6 @@ public class MainActivity extends ActionBarActivity {
             String giftId = getItem(position);
             dataAccess.GetGift(new GiftGetter(viewHolder, position), giftId);
             return row;
-        }
-
-        @Override
-        public long getItemId(int position) {
-            String giftId = getItem(position);
-            return mIdMap.get(giftId);
-        }
-
-        // TODO: Why use stable ids?
-        @Override
-        public boolean hasStableIds() {
-            return true;
         }
     }
 
