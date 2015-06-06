@@ -10,9 +10,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -23,7 +21,6 @@ import com.stuffexchange.dataAccess.OnTaskCompleted;
 import com.stuffexchange.model.Gift;
 import com.stuffexchange.model.User;
 
-import java.util.HashMap;
 import java.util.List;
 
 
@@ -74,9 +71,9 @@ public class MainActivity extends ActionBarActivity {
     private class GiftIdsGetter implements OnTaskCompleted {
         @Override
         public void onTaskCompleted(Object o) {
+            Context context = getApplicationContext();
             if (o == null) {
                 String message = "Could not get gifts from server";
-                Context context = getApplicationContext();
                 int duration = Toast.LENGTH_SHORT;
                 Toast toast = Toast.makeText(context, message, duration);
                 toast.show();
@@ -84,7 +81,7 @@ public class MainActivity extends ActionBarActivity {
             else {
                 final List<String> giftIds = (List<String>) o;
                 final ListView giftsListView = (ListView)findViewById(R.id.giftsListView);
-                final GiftIdArrayAdapter adapter = new GiftIdArrayAdapter(MainActivity.this, giftIds);
+                final GiftIdArrayAdapter adapter = new GiftIdArrayAdapter(context, dataAccess, giftIds);
                 giftsListView.setAdapter(adapter);
                 giftsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                     @Override
@@ -100,97 +97,7 @@ public class MainActivity extends ActionBarActivity {
         }
     }
 
-    private class GiftGetter implements OnTaskCompleted {
-        private GiftIdArrayAdapter.GiftViewHolder mGiftView;
-        private int mPosition;
-        public GiftGetter(GiftIdArrayAdapter.GiftViewHolder giftView, int position) {
-            mGiftView = giftView;
-            mPosition = position;
-        }
-        @Override
-        public void onTaskCompleted(Object o) {
-            if (o == null) {
-                String message = "Could not get gift from server";
-                Context context = getApplicationContext();
-                int duration = Toast.LENGTH_SHORT;
-                Toast toast = Toast.makeText(context, message, duration);
-                toast.show();
-            } else {
-                Gift gift = (Gift) o;
-                ImageView giftImageView = mGiftView.giftImageView;
-                giftImageView.setTag(mPosition);
-                if (gift.hasImages()) {
-                    String imageId = gift.getCoverImage() + "_thumb";
-                    dataAccess.GetImage(new CoverImageGetter(giftImageView, mPosition), imageId);
-                } else {
-                    giftImageView.setImageResource(R.drawable.default_image);
-                }
 
-                mGiftView.titleTextView.setText(gift.getTitle());
-                mGiftView.descriptionTextView.setText(gift.getDescription());
-            }
-        }
-    }
-
-    private class CoverImageGetter implements OnTaskCompleted {
-        ImageView mImageView;
-        int mPosition;
-        public CoverImageGetter(ImageView imageView, int position) {
-            mImageView = imageView;
-            mPosition = position;
-        }
-        @Override
-        public void onTaskCompleted(Object o) {
-            if (o == null) {
-                String message = "Could not get image from server";
-                Context context = getApplicationContext();
-                int duration = Toast.LENGTH_SHORT;
-                Toast toast = Toast.makeText(context, message, duration);
-                toast.show();
-            }
-            else {
-                if ((int)mImageView.getTag() == mPosition) {
-                    Bitmap image = (Bitmap) o;
-                    mImageView.setImageBitmap(image);
-                }
-            }
-        }
-    }
-
-    private class GiftIdArrayAdapter extends ArrayAdapter<String> {
-        public GiftIdArrayAdapter(Context context, List<String> giftIds) {
-            super(context, R.layout.gift_list_layout, giftIds);
-        }
-
-        public class GiftViewHolder {
-            ImageView giftImageView;
-            TextView titleTextView;
-            TextView descriptionTextView;
-
-            public GiftViewHolder(View v) {
-                giftImageView = (ImageView) v.findViewById(R.id.giftImageView);
-                titleTextView = (TextView) v.findViewById(R.id.commentUser);
-                descriptionTextView = (TextView) v.findViewById(R.id.giftDescription);
-            }
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            View row = convertView;
-            GiftViewHolder viewHolder = null;
-            if (row == null) {
-                row = getLayoutInflater().inflate(R.layout.gift_list_layout, parent, false);
-                viewHolder = new GiftViewHolder(row);
-                row.setTag(viewHolder);
-            } else {
-                viewHolder = (GiftViewHolder) row.getTag();
-            }
-
-            String giftId = getItem(position);
-            dataAccess.GetGift(new GiftGetter(viewHolder, position), giftId);
-            return row;
-        }
-    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
