@@ -11,8 +11,6 @@ import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -22,11 +20,8 @@ import android.widget.Toast;
 
 import com.stuffexchange.dataAccess.DataAccess;
 import com.stuffexchange.dataAccess.OnTaskCompleted;
-import com.stuffexchange.model.Comment;
 import com.stuffexchange.model.Gift;
 import com.stuffexchange.model.User;
-
-import java.util.List;
 
 
 public class GiftActivity extends ActionBarActivity {
@@ -275,46 +270,6 @@ public class GiftActivity extends ActionBarActivity {
             final ListView commentsListView = (ListView)findViewById(R.id.commentsListView);
             final CommentArrayAdapter adapter = new CommentArrayAdapter(GiftActivity.this, gift.getComments());
             commentsListView.setAdapter(adapter);
-        }
-    }
-
-    private class CommentArrayAdapter extends ArrayAdapter<Comment> {
-
-        public CommentArrayAdapter(Context context, List<Comment> comments) {
-            super(context, R.layout.comment_layout, comments);
-        }
-
-        public class CommentViewHolder {
-            TextView usernameTextView;
-            TextView timestampTextView;
-            TextView contentTextView;
-
-            public CommentViewHolder(View view) {
-                usernameTextView = (TextView) view.findViewById(R.id.username);
-                timestampTextView = (TextView) view.findViewById(R.id.timestamp);
-                contentTextView = (TextView) view.findViewById(R.id.content);
-            }
-
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            View row = convertView;
-            CommentViewHolder viewHolder = null;
-            if (row == null) {
-                row = getLayoutInflater().inflate(R.layout.comment_layout, parent, false);
-                viewHolder = new CommentViewHolder(row);
-                row.setTag(viewHolder);
-            } else {
-                viewHolder = (CommentViewHolder) row.getTag();
-            }
-
-            Comment comment = getItem(position);
-            viewHolder.usernameTextView.setText(comment.getUsername());
-            viewHolder.timestampTextView.setText(comment.getTimestamp().toString());
-            viewHolder.contentTextView.setText(comment.getContent());
-
-            return row;
         }
     }
 

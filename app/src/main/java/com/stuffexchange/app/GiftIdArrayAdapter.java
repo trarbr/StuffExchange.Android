@@ -26,18 +26,6 @@ class GiftIdArrayAdapter extends ArrayAdapter<String> {
         this.dataAccess = dataAccess;
     }
 
-    public class GiftViewHolder {
-        ImageView giftImageView;
-        TextView titleTextView;
-        TextView descriptionTextView;
-
-        public GiftViewHolder(View v) {
-            giftImageView = (ImageView) v.findViewById(R.id.giftImageView);
-            titleTextView = (TextView) v.findViewById(R.id.commentUser);
-            descriptionTextView = (TextView) v.findViewById(R.id.giftDescription);
-        }
-    }
-
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         View row = convertView;
@@ -53,6 +41,18 @@ class GiftIdArrayAdapter extends ArrayAdapter<String> {
         String giftId = getItem(position);
         dataAccess.GetGift(new GiftGetter(context, dataAccess, viewHolder, position), giftId);
         return row;
+    }
+
+    public class GiftViewHolder {
+        ImageView giftImageView;
+        TextView titleTextView;
+        TextView descriptionTextView;
+
+        public GiftViewHolder(View v) {
+            giftImageView = (ImageView) v.findViewById(R.id.giftImageView);
+            titleTextView = (TextView) v.findViewById(R.id.commentUser);
+            descriptionTextView = (TextView) v.findViewById(R.id.giftDescription);
+        }
     }
 
     private class GiftGetter implements OnTaskCompleted {
