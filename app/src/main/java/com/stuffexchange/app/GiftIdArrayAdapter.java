@@ -56,13 +56,14 @@ class GiftIdArrayAdapter extends ArrayAdapter<String> {
     }
 
     private class GiftGetter implements OnTaskCompleted {
-        private GiftIdArrayAdapter.GiftViewHolder mGiftView;
-        private int mPosition;
+        private GiftIdArrayAdapter.GiftViewHolder giftView;
+        private int position;
         private Context context;
         private DataAccess dataAccess;
-        public GiftGetter(Context context, DataAccess dataAccess, GiftIdArrayAdapter.GiftViewHolder giftView, int position) {
-            mGiftView = giftView;
-            mPosition = position;
+        public GiftGetter(Context context, DataAccess dataAccess,
+                          GiftIdArrayAdapter.GiftViewHolder giftView, int position) {
+            this.giftView = giftView;
+            this.position = position;
             this.context = context;
             this.dataAccess = dataAccess;
         }
@@ -75,16 +76,17 @@ class GiftIdArrayAdapter extends ArrayAdapter<String> {
                 toast.show();
             } else {
                 Gift gift = (Gift) o;
-                ImageView giftImageView = mGiftView.giftImageView;
-                giftImageView.setTag(mPosition);
+                ImageView giftImageView = giftView.giftImageView;
+                giftImageView.setTag(position);
                 if (gift.hasImages()) {
                     String imageId = gift.getCoverImage() + "_thumb";
-                    dataAccess.GetImage(new CoverImageGetter(context, giftImageView, mPosition), imageId);
+                    dataAccess.GetImage(new CoverImageGetter(context,
+                            giftImageView, position), imageId);
                 } else {
                     giftImageView.setImageResource(R.drawable.default_image);
                 }
-                mGiftView.titleTextView.setText(gift.getTitle());
-                mGiftView.descriptionTextView.setText(gift.getDescription());
+                giftView.titleTextView.setText(gift.getTitle());
+                giftView.descriptionTextView.setText(gift.getDescription());
             }
         }
     }

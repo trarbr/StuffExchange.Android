@@ -383,26 +383,26 @@ public class DataAccess {
     }
 
     private class AsyncGetGift extends AsyncTask<Void, Void, String> {
-        String mUri;
-        OnTaskCompleted mCaller;
+        OnTaskCompleted caller;
+        String uri;
 
         public AsyncGetGift(OnTaskCompleted caller, String giftId) {
-            mUri = BASE_URL + GIFTS + giftId;
-            mCaller = caller;
+            uri = BASE_URL + GIFTS + giftId;
+            this.caller = caller;
         }
 
         @Override
         protected String doInBackground(Void... params) {
-            return Http.get(mUri);
+            return Http.get(uri);
         }
 
         @Override
         protected void onPostExecute(String responseBody) {
             if (responseBody == null) {
-                mCaller.onTaskCompleted(null);
+                caller.onTaskCompleted(null);
             } else {
                 Gift gift = Gift.fromJsonString(responseBody);
-                mCaller.onTaskCompleted(gift);
+                caller.onTaskCompleted(gift);
             }
         }
     }

@@ -73,9 +73,6 @@ public class EditGiftActivity extends ActionBarActivity {
         super.onActivityResult(requestCode, resultCode, intent);
         if (requestCode == ADD_IMAGE_REQUEST_CODE) {
             if (resultCode == Activity.RESULT_OK) {
-                getContentResolver().notifyChange(photoUri, null);
-                ContentResolver cr = getContentResolver();
-                Bitmap bitmap;
                 dataAccess.AddImage(new ImageUploader(), giftId, photoUri, token);
             }
         }
